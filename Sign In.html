@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1440" />
+<title>Sign in | The Paris Lunchers Club</title>
+<link rel="preload" as="image" href="assets/fork-cursor.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg: #0A0A09;
+    --ink: #F4F1EA;
+    --muted: #6E6B64;
+    --line: #1F1E1B;
+    --field: #131211;
+    --field-line: #2A2925;
+    --hero-size: 96px;
+
+    --sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --display: "Geist", ui-sans-serif, -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "Inter", ui-sans-serif, sans-serif;
+    --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+  input, textarea { font-family: inherit; }
+  ::selection { background: var(--ink); color: var(--bg); }
+
+  /* Pink fork cursor — applied to everything, beats per-element pointer/default rules */
+  *, *::before, *::after {
+    cursor: url("assets/fork-cursor.png") 32 4, auto !important;
+  }
+
+  /* breathing vignette */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 50%,
+        transparent 0%,
+        color-mix(in oklch, var(--ink) 4%, transparent) 100%);
+    pointer-events: none;
+    z-index: 1;
+    animation: breathe 8s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ============ Top bar ============ */
+  header.bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 28px 40px;
+    position: relative;
+  }
+  .bar .left, .bar .right {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .bar .right { justify-content: flex-end; }
+  .bar a {
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar a:hover { color: var(--ink); }
+  .bar .back-arrow {
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  .bar a:hover .back-arrow { transform: translateX(-3px); }
+
+  .bar .mark {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .bar .mark span {
+    display: block;
+    color: var(--ink);
+    letter-spacing: 0.32em;
+    font-size: 12px;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* live time dot */
+  .time-dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #6FBE7A;
+    margin-right: 8px;
+    vertical-align: middle;
+    box-shadow: 0 0 0 0 rgba(111, 190, 122, 0.6);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(111, 190, 122, 0.6); }
+    50%       { box-shadow: 0 0 0 5px rgba(111, 190, 122, 0); }
+  }
+
+  /* ============ Stage ============ */
+  main.stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 40px 60px;
+  }
+
+  .eyebrow {
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    animation: fadeIn 0.8s 0.1s ease-out forwards;
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: "";
+    width: 22px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.45;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .greeting {
+    font-family: var(--display);
+    font-size: clamp(56px, var(--hero-size), var(--hero-size));
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 56px;
+    opacity: 0;
+    animation: fadeIn 0.9s 0.2s ease-out forwards;
+  }
+  .greeting .italic {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .greeting .cursor {
+    display: inline-block;
+    width: 0.04em;
+    background: var(--ink);
+    height: 0.8em;
+    vertical-align: -0.08em;
+    margin-left: 0.06em;
+    animation: blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink {
+    0%, 50%   { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 56px;
+    opacity: 0;
+    animation: fadeIn 0.9s 0.35s ease-out forwards;
+    max-width: 380px;
+  }
+
+  /* ============ Form ============ */
+  form.signin {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    opacity: 0;
+    animation: fadeIn 0.9s 0.5s ease-out forwards;
+  }
+
+  .field {
+    position: relative;
+    border: 1px solid var(--field-line);
+    background: var(--field);
+    border-radius: 14px;
+    padding: 14px 18px;
+    text-align: left;
+    transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  }
+  .field:hover { border-color: color-mix(in oklch, var(--ink) 22%, var(--field-line)); }
+  .field.focused {
+    border-color: var(--ink);
+    background: color-mix(in oklch, var(--field) 70%, var(--ink) 4%);
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ink) 7%, transparent);
+  }
+  .field.error {
+    border-color: #C8513E;
+    animation: shake 0.4s ease-out;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+    transition: color 0.25s ease;
+  }
+  .field.focused label { color: var(--ink); }
+  .field input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    outline: none;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 2px 0;
+  }
+  /* Kill Chrome/Safari autofill yellow + light text */
+  .field input:-webkit-autofill,
+  .field input:-webkit-autofill:hover,
+  .field input:-webkit-autofill:focus,
+  .field input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px var(--field) inset !important;
+    box-shadow: 0 0 0 1000px var(--field) inset !important;
+    -webkit-text-fill-color: var(--ink) !important;
+    caret-color: var(--ink);
+    border-radius: 0;
+    transition: background-color 9999s ease-out 0s, color 9999s ease-out 0s;
+  }
+  .field.focused input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px color-mix(in oklch, var(--field) 70%, var(--ink) 4%) inset !important;
+    box-shadow: 0 0 0 1000px color-mix(in oklch, var(--field) 70%, var(--ink) 4%) inset !important;
+  }
+  .field input::placeholder {
+    color: color-mix(in oklch, var(--muted) 70%, transparent);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  /* tabular numerals for member number */
+  .field.tab input { font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
+
+  /* The “toggle visibility” affordance on the passphrase */
+  .field .reveal {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 12px 14px;
+    border-radius: 6px;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+  .field .reveal:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 8%, transparent); }
+
+  /* Submit */
+  .submit {
+    margin-top: 10px;
+    padding: 18px 28px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: transform 0.18s ease, background 0.25s ease, color 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    line-height: 1;
+    min-height: 54px;
+    position: relative;
+    overflow: hidden;
+  }
+  .submit:hover { transform: translateY(-1px); }
+  .submit .arrow { transition: transform 0.25s ease; display: inline-block; }
+  .submit:hover .arrow { transform: translateX(4px); }
+  .submit[data-state="loading"] {
+    background: color-mix(in oklch, var(--ink) 18%, var(--field));
+    color: var(--ink);
+    cursor: progress;
+  }
+  .submit[data-state="denied"] {
+    background: #C8513E;
+    color: #F4F1EA;
+  }
+  .submit[data-state="granted"] {
+    background: #4F9B65;
+    color: #F4F1EA;
+  }
+
+  .submit .dots {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .submit .dots span {
+    width: 4px; height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: bounce 1.05s ease-in-out infinite;
+  }
+  .submit .dots span:nth-child(2) { animation-delay: 0.15s; }
+  .submit .dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 100% { opacity: 0.25; transform: translateY(0); }
+    50%      { opacity: 1;    transform: translateY(-3px); }
+  }
+
+  .helpers {
+    margin-top: 32px;
+    padding-top: 22px;
+    border-top: 1px solid var(--field-line, rgba(255,255,255,0.08));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeIn 0.9s 0.6s ease-out forwards;
+  }
+  .helper-link {
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.25s ease;
+    padding: 12px 8px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .helper-link:hover { color: var(--ink); }
+
+  .apply-prompt {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .apply-label {
+    font-family: var(--serif, Georgia, serif);
+    font-size: 13px;
+    font-style: normal;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--muted);
+    opacity: 0.78;
+  }
+  .apply-label .italic {
+    font-style: italic;
+    color: var(--ink);
+    opacity: 0.9;
+  }
+  .apply-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    transition: color 0.25s ease;
+  }
+  .apply-link .apply-arrow {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(.22,1,.36,1);
+  }
+  .apply-link:hover .apply-arrow { transform: translateX(4px); }
+
+  @media (max-width: 540px) {
+    .helpers {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+    }
+  }
+
+  /* The little secretive line that fades in/out under the form */
+  .whisper {
+    margin-top: 56px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeIn 1.2s 1.4s ease-out forwards, whisperCycle 12s 2.4s ease-in-out infinite;
+    letter-spacing: -0.005em;
+    min-height: 22px;
+  }
+  @keyframes whisperCycle {
+    0%, 18%  { opacity: 1; }
+    25%, 43% { opacity: 0; }
+    50%, 68% { opacity: 1; }
+    75%, 93% { opacity: 0; }
+    100%     { opacity: 1; }
+  }
+
+  /* ============ Footer ============ */
+  footer.foot {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 28px 40px 36px;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .foot .l, .foot .r { display: flex; gap: 28px; }
+  .foot .r { justify-content: flex-end; }
+  .foot .c { text-align: center; }
+  .foot a { transition: color 0.2s ease; }
+  .foot a:hover { color: var(--ink); }
+
+</style>
+</head>
+<body>
+<img src="assets/fork-cursor.png" alt="" aria-hidden="true" style="position:fixed; left:-9999px; top:-9999px; width:1px; height:1px; opacity:0; pointer-events:none;" />
+
+<div class="page">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="bar">
+    <div class="left">
+      <a href="The Paris Lunchers Club.html"><span class="back-arrow">←</span>Return</a>
+    </div>
+    <div class="mark">
+      The Paris Lunchers Club
+    </div>
+    <div class="right">
+      <a href="Apply.html">Apply</a>
+    </div>
+  </header>
+
+  <!-- ============ STAGE ============ -->
+  <main class="stage">
+    <div class="eyebrow" style="font-size: 12px; color: rgb(164, 164, 164); font-family: Inter">TODAY AT LUNCH, YOU'LL CHAT ABOUT</div>
+
+    <h1 class="greeting">
+      <span id="bonjour" class="italic">politics</span><span class="cursor"></span>
+    </h1>
+
+    <form class="signin" id="signinForm" autocomplete="off" novalidate>
+      <div class="field tab" id="fieldMember">
+        <label for="memberNum">Member number</label>
+        <input
+          id="memberNum"
+          name="member"
+          type="text"
+          inputmode="numeric"
+          placeholder="0000 0000"
+          maxlength="11"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="field" id="fieldPass">
+        <label for="passphrase">PASSWORD</label>
+        <input
+          id="passphrase"
+          name="passphrase"
+          type="password"
+          placeholder="••••••••"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="reveal" type="button" id="revealBtn" aria-label="Show passphrase">Show</button>
+      </div>
+
+      <button class="submit" type="submit" id="submitBtn" data-state="idle">
+        <span class="label">Enter</span>
+        <span class="arrow">→</span>
+      </button>
+    </form>
+
+    <div class="helpers">
+      <a class="helper-link" href="#forgot">Forgot your details?</a>
+      <a class="apply-link" href="The Paris Lunchers Club.html">
+        <span>Apply</span>
+        <span class="apply-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="whisper" id="whisper">vous êtes attendu</div>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="foot">
+    <div class="l">
+      <a href="#contact">Contact</a>
+      <a href="#press">Press</a>
+    </div>
+    <div class="c">© Paris, MMXXV</div>
+    <div class="r">
+      <a href="#terms">Terms</a>
+      <a href="#privacy">Privacy</a>
+      <a href="Staff.html" style="opacity:0.45">Staff</a>
+    </div>
+  </footer>
+
+</div>
+
+
+<script>
+  /* ============ Topic cycle ============ */
+  (function() {
+    const el = document.getElementById('bonjour');
+    const topics = [
+      'politics', 'finance', 'love', 'friendship', 'business',
+      'movies', 'art', 'fashion', 'travel'
+    ];
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % topics.length;
+      el.style.transition = 'opacity 0.45s ease';
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.textContent = topics[i];
+        el.style.opacity = '1';
+      }, 460);
+    }, 1300);
+  })();
+
+  /* ============ Whisper cycle ============ */
+  (function() {
+    const el = document.getElementById('whisper');
+    const lines = [
+      'vous êtes attendu',
+      'a quiet table is reserved',
+      'the room remembers you',
+      'passphrase changes weekly'
+    ];
+    let i = 0;
+    // synced loosely with the CSS @keyframes whisperCycle
+    setInterval(() => {
+      i = (i + 1) % lines.length;
+      el.textContent = lines[i];
+    }, 6000);
+  })();
+
+  /* ============ Field focus states ============ */
+  document.querySelectorAll('.field').forEach(f => {
+    const input = f.querySelector('input');
+    input.addEventListener('focus', () => f.classList.add('focused'));
+    input.addEventListener('blur',  () => f.classList.remove('focused'));
+    input.addEventListener('input', () => f.classList.remove('error'));
+  });
+
+  /* ============ Member number formatting ============ */
+  (function() {
+    const inp = document.getElementById('memberNum');
+    inp.addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 4) v = v.slice(0, 4) + ' ' + v.slice(4);
+      e.target.value = v;
+    });
+  })();
+
+  /* ============ Reveal passphrase ============ */
+  (function() {
+    const btn  = document.getElementById('revealBtn');
+    const inp  = document.getElementById('passphrase');
+    btn.addEventListener('click', () => {
+      const isPwd = inp.type === 'password';
+      inp.type = isPwd ? 'text' : 'password';
+      btn.textContent = isPwd ? 'Hide' : 'Show';
+      inp.focus();
+    });
+  })();
+
+  /* ============ Submit flow (unfunctional, performative) ============ */
+  (function() {
+    const form  = document.getElementById('signinForm');
+    const btn   = document.getElementById('submitBtn');
+    const label = btn.querySelector('.label');
+    const arrow = btn.querySelector('.arrow');
+    const fM    = document.getElementById('fieldMember');
+    const fP    = document.getElementById('fieldPass');
+
+    function set(state, text, withDots) {
+      btn.dataset.state = state;
+      label.textContent = text;
+      if (state === 'loading') {
+        arrow.style.display = 'none';
+        if (!btn.querySelector('.dots')) {
+          const d = document.createElement('span');
+          d.className = 'dots';
+          d.innerHTML = '<span></span><span></span><span></span>';
+          btn.appendChild(d);
+        }
+      } else {
+        arrow.style.display = '';
+        const d = btn.querySelector('.dots');
+        if (d) d.remove();
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (btn.dataset.state !== 'idle') return;
+      set('loading', 'Verifying');
+      setTimeout(() => set('loading', 'Cross-referencing the room'), 1200);
+      setTimeout(() => {
+        // always deny
+        set('denied', 'We don\u2019t recognise you');
+        fM.classList.add('error');
+        fP.classList.add('error');
+        setTimeout(() => {
+          set('idle', 'Try again');
+          fM.classList.remove('error');
+          fP.classList.remove('error');
+        }, 2400);
+      }, 2600);
+    });
+  })();
+
+</script>
+
+</body>
+</html>

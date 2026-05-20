@@ -1,0 +1,1568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1440" />
+<title>Apply for Membership | The Paris Lunchers Club</title>
+<link rel="preload" as="image" href="assets/fork-cursor.png" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="db.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #0A0A09;
+  --ink: #F4F1EA;
+  --muted: #6E6B64;
+  --muted-2: #8A8780;
+  --line: #1F1E1B;
+  --field: #131211;
+  --field-line: #2A2925;
+  --field-line-hover: #3a3832;
+  --danger: #C8513E;
+  --ok: #4F9B65;
+
+  --sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --display: "Geist", ui-sans-serif, -apple-system, sans-serif;
+  --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; }
+::selection { background: var(--ink); color: var(--bg); }
+
+/* Pink fork cursor — applied to everything, beats per-element pointer/default rules */
+*, *::before, *::after {
+  cursor: url("assets/fork-cursor.png") 32 4, auto !important;
+}
+
+/* breathing vignette */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 45%,
+      transparent 0%,
+      color-mix(in oklch, var(--ink) 4%, transparent) 100%);
+  pointer-events: none; z-index: 1;
+  animation: breathe 8s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* ============ Top bar ============ */
+header.bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 28px 40px;
+}
+.bar .left, .bar .right {
+  display: flex; align-items: center; gap: 28px;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink);
+}
+.bar .right { justify-content: flex-end; }
+.bar a { transition: color 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
+.bar a:hover { color: var(--ink); }
+.bar .back-arrow { transition: transform 0.2s ease; display: inline-block; }
+.bar a:hover .back-arrow { transform: translateX(-3px); }
+.bar .mark {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--ink); text-align: center; line-height: 1.4;
+}
+.bar .mark span {
+  display: block; color: var(--ink);
+  letter-spacing: 0.32em; font-size: 12px;
+  margin-top: 2px; font-variant-numeric: tabular-nums;
+}
+.time-dot {
+  display: inline-block; width: 5px; height: 5px;
+  border-radius: 50%; background: #6FBE7A;
+  margin-right: 8px; vertical-align: middle;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(111,190,122,0.55); }
+  50%     { box-shadow: 0 0 0 5px rgba(111,190,122,0); }
+}
+
+/* ============ Stage ============ */
+main.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 40px 60px;
+  width: 100%;
+}
+
+.progress {
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 56px;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted);
+}
+.progress-meta .meta-l,
+.progress-meta .meta-r {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.step-arrow {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 12px 14px;
+  margin: 0;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.55;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: opacity 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+.step-arrow:hover:not(:disabled) {
+  opacity: 1;
+  color: var(--ink);
+}
+#prevArrow:hover:not(:disabled) { transform: translateX(-2px); }
+#nextArrow:hover:not(:disabled) { transform: translateX(2px); }
+.step-arrow:disabled {
+  opacity: 0.30;
+  cursor: default;
+}
+#stepName { color: var(--ink); }
+.progress-track {
+  height: 2px;
+  background: var(--field-line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: var(--ink);
+  width: 0%;
+  transition: width 0.45s cubic-bezier(.22,1,.36,1);
+  border-radius: 2px;
+}
+
+/* ============ Step content ============ */
+.step-wrap {
+  width: 100%;
+  max-width: 540px;
+  min-height: 360px;
+  position: relative;
+}
+.step {
+  position: relative;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(.22,1,.36,1);
+  pointer-events: none;
+  display: none;
+}
+.step.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  display: block;
+}
+
+.eyebrow {
+  font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.34em; text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+  display: inline-flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content: ""; width: 22px; height: 1px; background: currentColor; opacity: 0.5; }
+
+/* Typewriter character reveal */
+.tw-ch {
+  opacity: 0;
+  transition: opacity 0.001s linear;
+}
+.tw-ch.show { opacity: 1; }
+.tw-caret {
+  display: inline-block;
+  width: 1px;
+  background: currentColor;
+  vertical-align: -0.12em;
+  margin-left: 2px;
+  opacity: 0.7;
+  animation: tw-blink 0.9s steps(1) infinite;
+}
+.prompt .tw-caret { height: 0.85em; width: 2px; }
+.help .tw-caret   { height: 0.95em; }
+@keyframes tw-blink {
+  0%, 49% { opacity: 0.7; }
+  50%, 100% { opacity: 0; }
+}
+
+.prompt {
+  font-family: var(--display);
+  font-size: 44px;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 14px;
+  text-wrap: balance;
+}
+.prompt .italic {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+.help {
+  font-size: 14px;
+  color: var(--muted-2);
+  margin-bottom: 36px;
+  max-width: 460px;
+  line-height: 1.55;
+}
+.help em { font-family: var(--serif); font-style: italic; color: var(--ink); font-size: 15px; }
+
+/* ============ Field ============ */
+.fields { display: flex; flex-direction: column; gap: 14px; }
+.fields.row { flex-direction: row; }
+.fields.row .field { flex: 1; }
+
+.field {
+  position: relative;
+  border: 1px solid var(--field-line);
+  background: var(--field);
+  border-radius: 14px;
+  padding: 14px 18px;
+  text-align: left;
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.field:hover { border-color: var(--field-line-hover); }
+.field.focused {
+  border-color: var(--ink);
+  background: color-mix(in oklch, var(--field) 70%, var(--ink) 4%);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ink) 6%, transparent);
+}
+.field.error {
+  border-color: var(--danger);
+  animation: shake 0.4s ease-out;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%  { transform: translateX(-6px); }
+  40%  { transform: translateX(6px); }
+  60%  { transform: translateX(-4px); }
+  80%  { transform: translateX(4px); }
+}
+.field-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.field label {
+  display: block;
+  font-size: 9.5px; font-weight: 500;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.25s ease;
+}
+.field.focused label { color: var(--ink); }
+.field label .req {
+  color: var(--ink);
+  margin-left: 6px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.8;
+}
+.field label .opt {
+  color: var(--muted);
+  margin-left: 6px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 2px 0;
+  resize: none;
+}
+.field textarea { line-height: 1.5; min-height: 60px; }
+
+/* Kill Chrome/Safari autofill yellow + light text */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus,
+.field input:-webkit-autofill:active,
+.field textarea:-webkit-autofill,
+.field select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--field) inset !important;
+  box-shadow: 0 0 0 1000px var(--field) inset !important;
+  -webkit-text-fill-color: var(--ink) !important;
+  caret-color: var(--ink);
+  border-radius: 0;
+  transition: background-color 9999s ease-out 0s, color 9999s ease-out 0s;
+}
+.field.focused input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px color-mix(in oklch, var(--field) 70%, var(--ink) 4%) inset !important;
+  box-shadow: 0 0 0 1000px color-mix(in oklch, var(--field) 70%, var(--ink) 4%) inset !important;
+}
+.field input::placeholder, .field textarea::placeholder {
+  color: color-mix(in oklch, var(--muted) 70%, transparent);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.field .prefix {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  padding-left: 2px;
+}
+.field.tab input { font-variant-numeric: tabular-nums; }
+.field .suffix-count {
+  position: absolute;
+  right: 14px; top: 14px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+.field .suffix-count.over { color: var(--danger); }
+
+/* Phone country select compact */
+.phone-row { display: flex; gap: 10px; }
+.phone-row .country {
+  flex: 0 0 124px;
+}
+.phone-row .country select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+                    linear-gradient(-45deg, transparent 50%, var(--muted) 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 8px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 30px;
+  cursor: pointer;
+}
+.phone-row .number { flex: 1; }
+
+/* Date row 3 cols */
+.date-row { display: flex; gap: 10px; }
+.date-row .field { flex: 1; }
+.date-row .field.year { flex: 1.2; }
+
+/* ============ City dropdown ============ */
+.city-field { position: relative; }
+.city-trigger {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.city-trigger-value { letter-spacing: 0.01em; }
+.city-trigger-value.placeholder {
+  color: color-mix(in oklch, var(--muted) 70%, transparent);
+  font-weight: 400;
+}
+.city-trigger-arrow {
+  color: var(--muted);
+  font-size: 14px;
+  transition: transform 0.25s ease, color 0.25s ease;
+  margin-left: 12px;
+}
+.city-field.open .city-trigger-arrow { transform: rotate(180deg); color: var(--ink); }
+
+.city-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0; right: 0;
+  background-color: #0F0E0D;
+  background-image: none;
+  border: 1px solid #2A2925;
+  border-radius: 14px;
+  padding: 6px;
+  z-index: 100;
+  isolation: isolate;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.5);
+  max-height: none;
+  overflow: visible;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s cubic-bezier(.22,1,.36,1);
+}
+.city-menu[hidden] { display: none; }
+.city-field.open .city-menu { opacity: 1; transform: translateY(0); }
+
+.city-opt {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 11px 14px;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.city-opt:hover:not(:disabled),
+.city-opt:focus-visible:not(:disabled) {
+  background: color-mix(in oklch, var(--ink) 7%, transparent);
+  outline: none;
+}
+.city-opt.soon {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+.city-opt.soon .tag {
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.city-opt.other {
+  color: var(--muted-2);
+}
+.city-opt.other:hover { color: var(--ink); }
+.city-opt.other .city-other-arrow {
+  font-size: 16px;
+  color: var(--muted);
+  font-weight: 300;
+}
+.city-opt .city-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--ok, #4F9B65);
+  opacity: 0.8;
+}
+.city-menu-divider {
+  padding: 12px 14px 6px;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.65;
+}
+.city-menu-divider.thin {
+  padding: 4px 0;
+  border-top: 1px solid var(--field-line);
+  margin: 4px 6px;
+}
+
+.other-city-field {
+  margin-top: 10px;
+  animation: cityOtherIn 0.32s cubic-bezier(.22,1,.36,1);
+}
+.other-city-field[hidden] { display: none; }
+@keyframes cityOtherIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ Step nav ============ */
+.step-nav {
+  width: 100%;
+  max-width: 540px;
+  margin-top: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.step-nav-right { display: flex; align-items: center; gap: 18px; }
+.hint {
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--field-line);
+  color: var(--muted);
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.btn-ghost:hover { color: var(--ink); border-color: var(--field-line-hover); }
+.btn-ghost.invisible { visibility: hidden; }
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+  border: 0;
+  padding: 18px 30px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.18s ease, background 0.25s ease, color 0.25s ease, opacity 0.25s ease;
+  line-height: 1;
+}
+.btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary .arrow { transition: transform 0.25s ease; display: inline-block; }
+.btn-primary:hover:not(:disabled) .arrow { transform: translateX(4px); }
+.btn-primary[data-state="loading"] { background: color-mix(in oklch, var(--ink) 18%, var(--field)); color: var(--ink); cursor: progress; }
+.btn-primary .dots { display: inline-flex; gap: 4px; }
+.btn-primary .dots span {
+  width: 4px; height: 4px;
+  background: currentColor;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: bounce 1.05s ease-in-out infinite;
+}
+.btn-primary .dots span:nth-child(2) { animation-delay: 0.15s; }
+.btn-primary .dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce {
+  0%,100% { opacity: 0.25; transform: translateY(0); }
+  50%     { opacity: 1;    transform: translateY(-3px); }
+}
+
+/* ============ Whisper ============ */
+.whisper {
+  margin-top: 64px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--muted);
+  opacity: 0;
+  animation: fadeIn 1.2s 1.2s ease-out forwards;
+  letter-spacing: -0.005em;
+  text-align: center;
+  min-height: 22px;
+  transition: opacity 0.6s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ============ Done screen ============ */
+.done {
+  text-align: center;
+  padding: 40px 0 0;
+}
+.done .seal {
+  width: 80px; height: 80px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  margin-bottom: 36px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 40px;
+  font-weight: 400;
+  position: relative;
+  animation: sealIn 1.2s 0.3s ease-out backwards;
+}
+@keyframes sealIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.done .seal::after {
+  content: "";
+  position: absolute; inset: -8px;
+  border: 1px solid var(--field-line);
+  border-radius: 50%;
+}
+.done h2 {
+  font-family: var(--display);
+  font-size: 56px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  margin-bottom: 18px;
+}
+.done h2 .italic { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.015em; }
+.done p { color: var(--muted-2); max-width: 420px; margin: 0 auto 12px; }
+.done .ref {
+  margin-top: 36px;
+  display: inline-block;
+  padding: 10px 18px;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.done .ref strong { color: var(--ink); font-weight: 600; margin-left: 8px; }
+.done .next-step {
+  margin-top: 56px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--muted);
+}
+
+/* ============ Review screen ============ */
+.review-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--field-line);
+}
+.review-row {
+  display: grid;
+  grid-template-columns: 180px 1fr auto;
+  align-items: baseline;
+  gap: 18px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--field-line);
+}
+.review-row .key {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.review-row .val {
+  font-size: 15px;
+  color: var(--ink);
+  word-break: break-word;
+}
+.review-row .val.empty {
+  color: var(--muted);
+  font-style: italic;
+  font-family: var(--serif);
+  font-size: 16px;
+}
+.review-row .edit {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.review-row .edit:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 8%, transparent); }
+
+/* ============ Footer ============ */
+footer.foot {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 28px 40px 36px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.foot .l, .foot .r { display: flex; gap: 28px; }
+.foot .r { justify-content: flex-end; }
+.foot .c { text-align: center; }
+.foot a { transition: color 0.2s ease; }
+.foot a:hover { color: var(--ink); }
+
+</style>
+</head>
+<body>
+<!-- Keep the fork cursor image hot in cache so it never flashes back to the system pointer between rapid step changes -->
+<img src="assets/fork-cursor.png" alt="" aria-hidden="true" style="position:fixed; left:-9999px; top:-9999px; width:1px; height:1px; opacity:0; pointer-events:none;" />
+
+<div class="page">
+
+  <header class="bar">
+    <div class="left">
+      <a href="The Paris Lunchers Club.html"><span class="back-arrow">←</span>Return</a>
+    </div>
+    <div class="mark">
+      The Paris Lunchers Club
+    </div>
+    <div class="right">
+      <a href="Sign In.html">Sign in</a>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- Progress -->
+    <div class="progress" id="progress">
+      <div class="progress-meta">
+        <span class="meta-l">
+          <button class="step-arrow" id="prevArrow" type="button" aria-label="Previous step">←</button>
+          <span id="stepLabel">Step 1 of 10</span>
+        </span>
+        <span class="meta-r">
+          <span id="stepName">Phone</span>
+          <button class="step-arrow" id="nextArrow" type="button" aria-label="Next step">→</button>
+        </span>
+      </div>
+      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+
+    <!-- Steps mount -->
+    <div class="step-wrap" id="stepWrap"></div>
+
+    <!-- Footer nav: back + next -->
+    <div class="step-nav" id="stepNav">
+      <button class="btn-ghost" id="backBtn" type="button">← Back</button>
+      <div class="step-nav-right">
+        <span class="hint" id="hint"></span>
+        <button class="btn-primary" id="nextBtn" type="button">
+          <span class="label">Continue</span>
+          <span class="arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="foot">
+    <div class="l"><a href="#contact">Contact</a><a href="#press">Press</a></div>
+    <div class="c">© Paris, MMXXV</div>
+    <div class="r"><a href="#terms">Terms</a><a href="#privacy">Privacy</a><a href="Staff.html" style="opacity:0.45">Staff</a></div>
+  </footer>
+
+</div>
+
+<script>
+/* ============ Apply for Membership | Raya-style flow ============ */
+
+/* ---------- Paris clock ---------- */
+
+/* ============ Step definitions ============ */
+
+const STEPS = [
+  { key: 'name',      name: 'Name' },
+  { key: 'email',     name: 'Email' },
+  { key: 'phone',     name: 'Phone' },
+  { key: 'dob',       name: 'Date of birth' },
+  { key: 'city',      name: 'Location' },
+  { key: 'work',      name: 'Work' },
+  { key: 'socials',   name: 'Socials' },
+  { key: 'referral',  name: 'Referral' },
+  { key: 'why',       name: 'Why' },
+  { key: 'review',    name: 'Review' }
+];
+
+const state = {
+  step: 0,
+  data: {
+    countryCode: '+33',
+    phone: '',
+    email: '',
+    firstName: '',
+    lastName: '',
+    dobDay: '', dobMonth: '', dobYear: '',
+    city: '',
+    cityIsOther: false,
+    profession: '',
+    employer: '',
+    instagram: '',
+    linkedin: '',
+    refName: '',
+    refRelation: '',
+    why: ''
+  }
+};
+
+const COUNTRIES = [
+  ['+33', 'FR'], ['+44', 'UK'], ['+1',  'US'],
+  ['+39', 'IT'], ['+34', 'ES'], ['+49', 'DE'],
+  ['+41', 'CH'], ['+32', 'BE'], ['+352','LU'],
+  ['+31', 'NL']
+];
+
+/* ============ Step HTML builders ============ */
+
+function stepPhone() {
+  return `
+    <div class="eyebrow">Tell us how to reach you</div>
+    <h2 class="prompt">What's your <span class="italic">number </span>?</h2>
+    <p class="help">We use it once, to text you a time and a restaurant. Never for marketing.</p>
+    <div class="fields">
+      <div class="phone-row">
+        <div class="field country" data-name="countryCode">
+          <div class="field-body">
+            <label>Code</label>
+            <select id="countryCode">
+              ${COUNTRIES.map(([c, n]) => `<option value="${c}">${n} ${c}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="field number tab" data-name="phone">
+          <div class="field-body">
+            <label>Mobile number <span class="req">required</span></label>
+            <input id="phone" type="tel" inputmode="numeric" placeholder="6 12 34 56 78" autocomplete="tel-national" />
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepEmail() {
+  return `
+    <div class="eyebrow">And by email</div>
+    <h2 class="prompt">Your <span class="italic">email </span>?</h2>
+    <p class="help">We'll use it to confirm and, if you're in, send the welcome.</p>
+    <div class="fields">
+      <div class="field" data-name="email">
+        <div class="field-body">
+          <label>Email <span class="req">required</span></label>
+          <input id="email" type="email" inputmode="email" placeholder="camille@maison.fr" autocomplete="email" autocapitalize="off" spellcheck="false" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepName() {
+  return `
+    <div class="eyebrow">Your full name</div>
+    <h2 class="prompt">Who shall we <span class="italic">expect</span>?</h2>
+    <p class="help">As you'd like to be greeted at the table.</p>
+    <div class="fields row">
+      <div class="field" data-name="firstName">
+        <div class="field-body">
+          <label>First name <span class="req">required</span></label>
+          <input id="firstName" type="text" placeholder="Camille" autocomplete="given-name" />
+        </div>
+      </div>
+      <div class="field" data-name="lastName">
+        <div class="field-body">
+          <label>Last name <span class="req">required</span></label>
+          <input id="lastName" type="text" placeholder="Lefèvre" autocomplete="family-name" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepDob() {
+  return `
+    <div class="eyebrow">Date of birth</div>
+    <h2 class="prompt">When were you <span class="italic">born</span>?</h2>
+    <p class="help">Membership is open to anyone over eighteen.</p>
+    <div class="date-row">
+      <div class="field tab" data-name="dobDay">
+        <div class="field-body">
+          <label>Day</label>
+          <input id="dobDay" type="text" inputmode="numeric" placeholder="DD" maxlength="2" />
+        </div>
+      </div>
+      <div class="field tab" data-name="dobMonth">
+        <div class="field-body">
+          <label>Month</label>
+          <input id="dobMonth" type="text" inputmode="numeric" placeholder="MM" maxlength="2" />
+        </div>
+      </div>
+      <div class="field tab year" data-name="dobYear">
+        <div class="field-body">
+          <label>Year</label>
+          <input id="dobYear" type="text" inputmode="numeric" placeholder="YYYY" maxlength="4" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepCity() {
+  const cities = [
+    { value: 'Paris', label: 'Paris', live: true },
+    { value: 'Londres', label: 'Londres', live: false },
+    { value: 'Madrid', label: 'Madrid', live: false },
+    { value: 'Munich', label: 'Munich', live: false },
+    { value: 'Bordeaux', label: 'Bordeaux', live: false },
+    { value: 'Brussels', label: 'Brussels', live: false }
+  ];
+  const isOther = state.data.cityIsOther;
+  const selected = state.data.city;
+  let triggerLabel;
+  let triggerCls = '';
+  if (isOther && selected) triggerLabel = `Other · ${escapeHtml(selected)}`;
+  else if (isOther && !selected) triggerLabel = 'Other';
+  else if (selected) triggerLabel = escapeHtml(selected);
+  else { triggerLabel = 'Select a city'; triggerCls = 'placeholder'; }
+
+  return `
+    <div class="eyebrow">Where you lunch</div>
+    <h2 class="prompt">Which <span class="italic">city</span>?</h2>
+    <p class="help">For now we host in Paris. More cities coming soon.</p>
+    <div class="fields">
+      <div class="field city-field" id="cityField">
+        <div class="field-body">
+          <label>City <span class="req">required</span></label>
+          <button type="button" class="city-trigger" id="cityTrigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="city-trigger-value ${triggerCls}" id="cityTriggerValue">${triggerLabel}</span>
+            <span class="city-trigger-arrow" aria-hidden="true">▾</span>
+          </button>
+        </div>
+        <div class="city-menu" id="cityMenu" role="listbox" hidden>
+          <button type="button" class="city-opt" data-value="Paris" role="option">
+            <span>Paris</span>
+            <span class="city-dot" aria-hidden="true"></span>
+          </button>
+          <div class="city-menu-divider"><span>Coming soon</span></div>
+          ${cities.filter(c => !c.live).map(c => `
+            <button type="button" class="city-opt soon" data-value="${c.value}" disabled aria-disabled="true" role="option">
+              <span>${c.label}</span>
+              <span class="tag">soon</span>
+            </button>
+          `).join('')}
+          <div class="city-menu-divider thin"></div>
+          <button type="button" class="city-opt other" data-value="__other" role="option">
+            <span>Other</span>
+            <span class="city-other-arrow" aria-hidden="true">+</span>
+          </button>
+        </div>
+      </div>
+      <div class="field other-city-field" id="otherCityField" ${isOther ? '' : 'hidden'}>
+        <div class="field-body">
+          <label>Tell us where</label>
+          <input id="otherCityInput" type="text" placeholder="e.g. Lisbon, Copenhagen, Stockholm\u2026" value="${isOther ? escapeHtml(selected) : ''}" autocomplete="address-level2" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepWork() {
+  return `
+    <div class="eyebrow">Profession</div>
+    <h2 class="prompt">What do you <span class="italic">do</span>?</h2>
+    <p class="help">A few words. Founder, gallery director, architect at OMA. Specificity helps us place you well.</p>
+    <div class="fields">
+      <div class="field" data-name="profession">
+        <div class="field-body">
+          <label>Profession <span class="req">required</span></label>
+          <input id="profession" type="text" placeholder="Founder · Architect · Editor…" />
+        </div>
+      </div>
+      <div class="field" data-name="employer">
+        <div class="field-body">
+          <label>Employer or company <span class="req">required</span></label>
+          <input id="employer" type="text" placeholder="Atelier, studio, firm or self-employed" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepSocials() {
+  return `
+    <div class="eyebrow">Show us where you live online</div>
+    <h2 class="prompt">Your <span class="italic">socials</span>.</h2>
+    <p class="help">LinkedIn is required, it's the only profile we'll actually read. Instagram is optional.</p>
+    <div class="fields">
+      <div class="field" data-name="linkedin">
+        <div class="field-body">
+          <label>LinkedIn <span class="req">required</span></label>
+          <input id="linkedin" type="url" placeholder="linkedin.com/in/your-handle" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+      <div class="field" data-name="instagram">
+        <div class="field-body">
+          <label>Instagram <span class="opt">optional</span></label>
+          <input id="instagram" type="text" placeholder="@your_handle" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepReferral() {
+  return `
+    <div class="eyebrow">A friend at the table</div>
+    <h2 class="prompt">Who <span class="italic">sent</span> you?</h2>
+    <p class="help">A recommendation from an existing member is by far the most important field in this form. <em>Without one, the room is much harder to enter.</em> If you don't have one yet, leave it blank, but tell us how you found us in the next step.</p>
+    <div class="fields">
+      <div class="field" data-name="refName">
+        <div class="field-body">
+          <label>Member's full name <span class="opt">optional but decisive</span></label>
+          <input id="refName" type="text" placeholder="Camille Lefèvre" />
+        </div>
+      </div>
+      <div class="field" data-name="refRelation">
+        <div class="field-body">
+          <label>How do you know them?</label>
+          <input id="refRelation" type="text" placeholder="Former colleague at… · Friend since 2018…" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function stepWhy() {
+  return `
+    <div class="eyebrow">The only open question</div>
+    <h2 class="prompt"><span style="font-family: var(--sans);">Why</span> join the club?</h2>
+    <p class="help">Up to three hundred characters. The best answers are specific, dry, slightly askew.</p>
+    <div class="fields">
+      <div class="field" data-name="why">
+        <div class="field-body">
+          <label>Your answer <span class="req">required</span></label>
+          <textarea id="why" rows="3" maxlength="300" placeholder="Two sentences, no more."></textarea>
+        </div>
+        <div class="suffix-count" id="whyCount" style="position:absolute; right:14px; bottom:12px; top:auto;">0 / 300</div>
+      </div>
+    </div>
+  `;
+}
+
+function stepReview() {
+  const d = state.data;
+  const phone = d.phone ? `${d.countryCode} ${d.phone}` : '';
+  const fullName = [d.firstName, d.lastName].filter(Boolean).join(' ');
+  const dob = (d.dobDay && d.dobMonth && d.dobYear) ? `${d.dobDay}/${d.dobMonth}/${d.dobYear}` : '';
+  const work = [d.profession, d.employer].filter(Boolean).join(' · ');
+  const referral = d.refName ? (d.refRelation ? `${d.refName} · ${d.refRelation}` : d.refName) : '';
+
+  const rows = [
+    { key: 'Name',            val: fullName,     step: 0 },
+    { key: 'Email',           val: d.email,      step: 1 },
+    { key: 'Phone',           val: phone,        step: 2 },
+    { key: 'Date of birth',   val: dob,          step: 3 },
+    { key: 'City',            val: d.city,       step: 4 },
+    { key: 'Work',            val: work,         step: 5 },
+    { key: 'LinkedIn',        val: d.linkedin,   step: 6 },
+    { key: 'Instagram',       val: d.instagram,  step: 6 },
+    { key: 'Referral',        val: referral,     step: 7 },
+    { key: 'Why',             val: d.why,        step: 8 }
+  ];
+
+  return `
+    <div class="eyebrow">Last look</div>
+    <h2 class="prompt">A quick <span class="italic">review</span>.</h2>
+    <p class="help">Edit anything that's not quite right.</p>
+    <div class="review-list">
+      ${rows.map(r => `
+        <div class="review-row">
+          <span class="key">${r.key}</span>
+          <span class="val ${r.val ? '' : 'empty'}">${r.val ? escapeHtml(r.val) : 'not provided'}</span>
+          <button type="button" class="edit" data-edit-step="${r.step}">Edit</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* ============ Render + navigation ============ */
+
+const wrap = document.getElementById('stepWrap');
+const stepLabel = document.getElementById('stepLabel');
+const stepNameEl = document.getElementById('stepName');
+const progressBar = document.getElementById('progressBar');
+const backBtn = document.getElementById('backBtn');
+const nextBtn = document.getElementById('nextBtn');
+const nextLabel = nextBtn.querySelector('.label');
+const nextArrow = nextBtn.querySelector('.arrow');
+const hint = document.getElementById('hint');
+const prevArrowBtn = document.getElementById('prevArrow');
+const nextArrowBtn = document.getElementById('nextArrow');
+
+prevArrowBtn.addEventListener('click', () => { if (!prevArrowBtn.disabled) goBack(); });
+nextArrowBtn.addEventListener('click', () => { if (!nextArrowBtn.disabled) goNext(); });
+
+function buildStepHtml(idx) {
+  switch (STEPS[idx].key) {
+    case 'phone':    return stepPhone();
+    case 'email':    return stepEmail();
+    case 'name':     return stepName();
+    case 'dob':      return stepDob();
+    case 'city':     return stepCity();
+    case 'work':     return stepWork();
+    case 'socials':  return stepSocials();
+    case 'referral': return stepReferral();
+    case 'why':      return stepWhy();
+    case 'review':   return stepReview();
+  }
+}
+
+function render() {
+  const idx = state.step;
+  const total = STEPS.length;
+
+  // Progress
+  stepLabel.textContent = `Step ${idx + 1} of ${total}`;
+  stepNameEl.textContent = STEPS[idx].name;
+  progressBar.style.width = `${((idx + 1) / total) * 100}%`;
+
+  // Step content
+  wrap.innerHTML = `<div class="step active" id="currentStep">${buildStepHtml(idx)}</div>`;
+
+  // Wire fields
+  wireStep(idx);
+
+  // Typewriter reveal for prompt + help
+  runTypewriter(idx);
+
+  // Back button
+  backBtn.classList.toggle('invisible', idx === 0);
+
+  // Progress arrows
+  prevArrowBtn.disabled = idx === 0;
+  nextArrowBtn.disabled = !isStepValid(idx);
+
+  // Next button label
+  if (idx === total - 1) {
+    nextLabel.textContent = 'Send application';
+  } else {
+    nextLabel.textContent = 'Continue';
+  }
+  nextBtn.disabled = !isStepValid(idx);
+  nextArrowBtn.disabled = !isStepValid(idx);
+  hint.textContent = hintFor(idx);
+
+  // Focus first input
+  setTimeout(() => {
+    const f = wrap.querySelector('input, textarea, select');
+    if (f) f.focus();
+  }, 300);
+}
+
+function hintFor(idx) {
+  const key = STEPS[idx].key;
+  if (key === 'referral') return state.data.refName ? '' : 'Optional · but rare to get in without';
+  if (key === 'why') return `${(state.data.why || '').length} / 300`;
+  if (key === 'review') return '';
+  return 'Press Enter to continue';
+}
+
+let _twToken = 0;
+function runTypewriter(idx) {
+  _twToken++;
+  const token = _twToken;
+  const prompt = wrap.querySelector('.prompt');
+  const help = wrap.querySelector('.help');
+  const PROMPT_SPEED = 32;   // ms per char
+  const HELP_SPEED   = 12;
+  const PROMPT_DELAY = 120;  // ms before prompt starts
+  const GAP_AFTER_PROMPT = 220;
+
+  let promptDuration = 0;
+  if (prompt) {
+    promptDuration = typewrite(prompt, PROMPT_SPEED, PROMPT_DELAY, token);
+  }
+  if (help) {
+    typewrite(help, HELP_SPEED, PROMPT_DELAY + promptDuration + GAP_AFTER_PROMPT, token);
+  }
+}
+
+function typewrite(el, speed, startDelay, token) {
+  // Walk the tree, wrap every visible character in a <span class="tw-ch">.
+  const chars = [];
+  (function walk(node) {
+    [...node.childNodes].forEach(child => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        const text = child.textContent;
+        if (!text) return;
+        const frag = document.createDocumentFragment();
+        for (const ch of text) {
+          const s = document.createElement('span');
+          s.className = 'tw-ch';
+          s.textContent = ch;
+          frag.appendChild(s);
+          chars.push(s);
+        }
+        child.replaceWith(frag);
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        walk(child);
+      }
+    });
+  })(el);
+
+  // Append a blinking caret while typing
+  const caret = document.createElement('span');
+  caret.className = 'tw-caret';
+  el.appendChild(caret);
+
+  // Stagger reveal via transition-delay
+  chars.forEach((s, i) => {
+    s.style.transitionDelay = `${startDelay + i * speed}ms`;
+  });
+  // Force layout, then trigger
+  requestAnimationFrame(() => {
+    if (token !== _twToken) return;
+    chars.forEach(s => s.classList.add('show'));
+  });
+
+  const total = startDelay + chars.length * speed;
+  setTimeout(() => {
+    if (token !== _twToken) return;
+    if (caret.parentNode) caret.remove();
+  }, total + 400);
+
+  return chars.length * speed;
+}
+
+function wireCityStep() {
+  const field = document.getElementById('cityField');
+  const trigger = document.getElementById('cityTrigger');
+  const value = document.getElementById('cityTriggerValue');
+  const menu = document.getElementById('cityMenu');
+  const otherWrap = document.getElementById('otherCityField');
+  const otherInp = document.getElementById('otherCityInput');
+
+  function setTriggerLabel(text, isPlaceholder) {
+    value.textContent = text;
+    value.classList.toggle('placeholder', !!isPlaceholder);
+  }
+  function updateValidity() {
+    const ok = isStepValid(state.step);
+    nextBtn.disabled = !ok;
+    nextArrowBtn.disabled = !ok;
+  }
+  function open() {
+    menu.hidden = false;
+    requestAnimationFrame(() => field.classList.add('open'));
+    trigger.setAttribute('aria-expanded', 'true');
+    setTimeout(() => document.addEventListener('click', onDocClick), 0);
+    document.addEventListener('keydown', onEsc);
+  }
+  function close() {
+    field.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('click', onDocClick);
+    document.removeEventListener('keydown', onEsc);
+    setTimeout(() => { menu.hidden = true; }, 180);
+  }
+  function onDocClick(e) { if (!field.contains(e.target)) close(); }
+  function onEsc(e) { if (e.key === 'Escape') close(); }
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (menu.hidden) open(); else close();
+  });
+
+  menu.querySelectorAll('.city-opt').forEach(opt => {
+    if (opt.disabled) return;
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const val = opt.dataset.value;
+      if (val === '__other') {
+        state.data.cityIsOther = true;
+        const oi = document.getElementById('otherCityInput');
+        state.data.city = oi ? oi.value.trim() : '';
+        setTriggerLabel(state.data.city ? `Other \u00b7 ${state.data.city}` : 'Other', !state.data.city);
+        otherWrap.hidden = false;
+        otherWrap.removeAttribute('hidden');
+        setTimeout(() => {
+          const inp = document.getElementById('otherCityInput');
+          if (inp) inp.focus();
+        }, 80);
+      } else {
+        state.data.cityIsOther = false;
+        state.data.city = val;
+        setTriggerLabel(val, false);
+        otherWrap.hidden = true;
+        otherWrap.setAttribute('hidden', '');
+      }
+      updateValidity();
+      close();
+    });
+  });
+
+  if (otherInp) {
+    otherInp.addEventListener('focus', () => otherWrap.classList.add('focused'));
+    otherInp.addEventListener('blur',  () => otherWrap.classList.remove('focused'));
+    otherInp.addEventListener('input', () => {
+      state.data.city = otherInp.value.trim();
+      setTriggerLabel(state.data.city ? `Other \u00b7 ${state.data.city}` : 'Other', !state.data.city);
+      updateValidity();
+    });
+    otherInp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!nextBtn.disabled) goNext();
+      }
+    });
+  }
+}
+
+function wireStep(idx) {
+  const key = STEPS[idx].key;
+  const fields = wrap.querySelectorAll('.field');
+
+  fields.forEach(f => {
+    const inp = f.querySelector('input, textarea, select');
+    if (!inp) return;
+    const name = f.dataset.name;
+    if (name && state.data[name] != null) inp.value = state.data[name];
+
+    inp.addEventListener('focus', () => f.classList.add('focused'));
+    inp.addEventListener('blur',  () => f.classList.remove('focused'));
+    inp.addEventListener('input', () => {
+      f.classList.remove('error');
+      if (name) state.data[name] = inp.value;
+      nextBtn.disabled = !isStepValid(state.step);
+      nextArrowBtn.disabled = !isStepValid(state.step);
+      if (key === 'why') {
+        const ct = document.getElementById('whyCount');
+        const l = inp.value.length;
+        if (ct) {
+          ct.textContent = `${l} / 300`;
+          ct.classList.toggle('over', l > 300);
+        }
+        hint.textContent = `${l} / 300`;
+      }
+    });
+
+    // Enter to advance
+    if (inp.tagName !== 'TEXTAREA') {
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (!nextBtn.disabled) goNext();
+        }
+      });
+    }
+  });
+
+  // DOB auto-advance between fields
+  if (key === 'dob') {
+    const d = document.getElementById('dobDay');
+    const m = document.getElementById('dobMonth');
+    const y = document.getElementById('dobYear');
+    function autoAdvance(from, to, max) {
+      from.addEventListener('input', () => {
+        from.value = from.value.replace(/\D/g, '').slice(0, max);
+        if (from.value.length === max) to.focus();
+      });
+    }
+    autoAdvance(d, m, 2);
+    autoAdvance(m, y, 2);
+    y.addEventListener('input', () => { y.value = y.value.replace(/\D/g, '').slice(0, 4); });
+  }
+
+  if (key === 'phone') {
+    const ph = document.getElementById('phone');
+    ph.addEventListener('input', () => {
+      let v = ph.value.replace(/\D/g, '').slice(0, 12);
+      // light spacing every 2 digits
+      v = v.replace(/(\d{1,2})(?=(\d{2})+(?!\d))/g, '$1 ');
+      ph.value = v;
+    });
+    const cc = document.getElementById('countryCode');
+    cc.value = state.data.countryCode;
+    cc.addEventListener('change', () => { state.data.countryCode = cc.value; });
+  }
+
+  if (key === 'city') {
+    wireCityStep();
+  }
+
+  if (key === 'review') {
+    wrap.querySelectorAll('.edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.step = parseInt(btn.dataset.editStep, 10);
+        render();
+      });
+    });
+  }
+}
+
+/* ============ Validation ============ */
+
+function isStepValid(idx) {
+  const d = state.data;
+  switch (STEPS[idx].key) {
+    case 'phone':    return d.phone.replace(/\s/g, '').length >= 6;
+    case 'email':    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((d.email || '').trim());
+    case 'name':     return d.firstName.trim().length > 0 && d.lastName.trim().length > 0;
+    case 'dob': {
+      if (!d.dobDay || !d.dobMonth || !d.dobYear) return false;
+      const y = parseInt(d.dobYear, 10);
+      if (!(y >= 1900 && y <= new Date().getFullYear() - 18)) return false;
+      const day = parseInt(d.dobDay, 10);
+      const mo  = parseInt(d.dobMonth, 10);
+      return day >= 1 && day <= 31 && mo >= 1 && mo <= 12;
+    }
+    case 'city': {
+      if (d.cityIsOther) return (d.city || '').trim().length > 1;
+      return d.city === 'Paris';
+    }
+    case 'work':     return d.profession.trim().length > 0 && d.employer.trim().length > 0;
+    case 'socials': {
+      const v = (d.linkedin || '').trim();
+      // Loose check: full URL OR a plausible handle
+      return /linkedin\.com\/\S{2,}/i.test(v) || /^[a-z0-9][a-z0-9._-]{2,}$/i.test(v);
+    }
+    case 'referral': return true;  // optional
+    case 'why':      return d.why.trim().length >= 12 && d.why.length <= 300;
+    case 'review':   return true;
+    default:         return true;
+  }
+}
+
+/* ============ Navigation ============ */
+
+function goNext() {
+  if (state.step === STEPS.length - 1) return submit();
+  if (!isStepValid(state.step)) {
+    flashErrors();
+    return;
+  }
+  state.step++;
+  render();
+}
+
+function goBack() {
+  if (state.step === 0) return;
+  state.step--;
+  render();
+}
+
+function flashErrors() {
+  wrap.querySelectorAll('.field').forEach(f => {
+    const inp = f.querySelector('input, textarea');
+    if (inp && !inp.value.trim()) f.classList.add('error');
+  });
+}
+
+backBtn.addEventListener('click', goBack);
+nextBtn.addEventListener('click', goNext);
+
+/* ============ Submit (unfunctional) ============ */
+
+function submit() {
+  nextBtn.dataset.state = 'loading';
+  nextLabel.textContent = 'Sending';
+  nextArrow.style.display = 'none';
+  if (!nextBtn.querySelector('.dots')) {
+    const d = document.createElement('span');
+    d.className = 'dots';
+    d.innerHTML = '<span></span><span></span><span></span>';
+    nextBtn.appendChild(d);
+  }
+  backBtn.disabled = true;
+
+  setTimeout(() => { nextLabel.textContent = 'Reviewing the room'; }, 1200);
+  setTimeout(() => { nextLabel.textContent = 'Filing your application'; }, 2400);
+
+  setTimeout(async () => {
+    let refCode;
+    try {
+      const record = await window.TPLC.submitApplication(state.data);
+      refCode = record.refCode;
+    } catch (e) {
+      refCode = generateRefCode();
+    }
+    wrap.innerHTML = `
+      <div class="step active done">
+        <h2>Application <span class="italic">received</span>.</h2>
+        <p>We read every application. You'll hear from us.</p>
+        <p>If we say yes, we'll book your first lunch the same week.</p>
+        <div class="ref">Reference <strong>${refCode}</strong></div>
+        <div class="next-step">See you at lunch!</div>
+      </div>
+    `;
+    // Hide step nav, advance progress to 100
+    document.getElementById('stepNav').style.display = 'none';
+    document.getElementById('progress').style.opacity = '0.4';
+    prevArrowBtn.disabled = true;
+    nextArrowBtn.disabled = true;
+    stepLabel.textContent = `Step ${STEPS.length} of ${STEPS.length}`;
+    stepNameEl.textContent = 'Sent';
+  }, 3600);
+}
+
+function generateRefCode() {
+  const letters = 'ACDEFGHJKLMNPQRSTUVWXY';
+  const pick = (s) => s[Math.floor(Math.random() * s.length)];
+  const a = pick(letters) + pick(letters);
+  const n = String(Math.floor(1000 + Math.random() * 9000));
+  const b = pick(letters);
+  return `${a}-${n}-${b}`;
+}
+
+/* ============ Boot ============ */
+render();
+
+</script>
+</body>
+</html>
