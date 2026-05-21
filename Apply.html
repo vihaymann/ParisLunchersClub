@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=1440" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Apply for Membership | The Paris Lunchers Club</title>
 <link rel="preload" as="image" href="assets/fork-cursor.png" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -741,6 +741,101 @@ footer.foot {
 .foot .c { text-align: center; }
 .foot a { transition: color 0.2s ease; }
 .foot a:hover { color: var(--ink); }
+
+/* ============ Mobile responsive ============ */
+@media (max-width: 768px) {
+  header.bar {
+    grid-template-columns: auto 1fr auto;
+    padding: 18px 16px;
+    gap: 8px;
+  }
+  .bar .left a { font-size: 11px; gap: 4px; }
+  .bar .mark { font-size: 10px; letter-spacing: 0.18em; display: none; }
+  .bar .right { font-size: 11px; }
+
+  main.stage {
+    padding: 28px 20px 40px;
+  }
+
+  .progress { margin-bottom: 32px; }
+  .progress-meta { font-size: 10px; }
+
+  .step-wrap { min-height: 280px; }
+
+  .eyebrow { font-size: 9.5px; letter-spacing: 0.24em; margin-bottom: 14px; }
+
+  .prompt {
+    font-size: 28px;
+    letter-spacing: -0.025em;
+    margin-bottom: 10px;
+  }
+
+  .help {
+    font-size: 13px;
+    margin-bottom: 24px;
+    max-width: 100%;
+  }
+
+  .fields.row { flex-direction: column; }
+  .phone-row { flex-direction: column; }
+  .phone-row .country { flex: none; }
+  .date-row { gap: 8px; }
+
+  .field {
+    padding: 12px 14px;
+    border-radius: 12px;
+  }
+  .field input, .field textarea, .field select {
+    font-size: 16px;
+  }
+
+  .step-nav {
+    margin-top: 24px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .step-nav-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .btn-ghost { padding: 12px 18px; width: 100%; text-align: center; }
+  .btn-primary { padding: 16px 24px; width: 100%; justify-content: center; }
+
+  .review-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 12px 0;
+  }
+  .review-row .key { font-size: 9px; }
+  .review-row .val { font-size: 14px; }
+  .review-row .edit {
+    justify-self: start;
+    margin-top: 4px;
+  }
+
+  .done h2 { font-size: 36px; }
+  .done p { font-size: 13px; }
+  .done .ref { font-size: 10px; }
+
+  .city-menu {
+    border-radius: 12px;
+  }
+
+  .whisper { margin-top: 40px; font-size: 14px; }
+
+  footer.foot {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 24px 20px 28px;
+    text-align: center;
+  }
+  .foot .l, .foot .r {
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .foot .c { order: -1; }
+}
 
 </style>
 </head>
