@@ -744,90 +744,146 @@ footer.foot {
 
 /* ============ Mobile responsive ============ */
 @media (max-width: 768px) {
+  /* Header: hide center mark, compact nav */
   header.bar {
-    grid-template-columns: auto 1fr auto;
-    padding: 18px 16px;
-    gap: 8px;
+    grid-template-columns: 1fr 1fr;
+    padding: 16px 20px;
   }
-  .bar .left a { font-size: 11px; gap: 4px; }
-  .bar .mark { font-size: 10px; letter-spacing: 0.18em; display: none; }
-  .bar .right { font-size: 11px; }
+  .bar .left a { font-size: 13px; gap: 6px; }
+  .bar .mark { display: none; }
+  .bar .right { font-size: 13px; }
 
+  /* Stage: minimal padding, content pushed up */
   main.stage {
-    padding: 28px 20px 40px;
+    padding: 16px 20px 32px;
+    align-items: stretch;
   }
 
-  .progress { margin-bottom: 32px; }
-  .progress-meta { font-size: 10px; }
+  /* Progress: full-width, bigger text */
+  .progress {
+    max-width: 100%;
+    margin-bottom: 28px;
+  }
+  .progress-meta { font-size: 12px; }
+  .step-arrow { min-width: 40px; min-height: 40px; font-size: 14px; }
 
-  .step-wrap { min-height: 280px; }
+  /* Step content: full-width */
+  .step-wrap {
+    max-width: 100%;
+    min-height: auto;
+  }
 
-  .eyebrow { font-size: 9.5px; letter-spacing: 0.24em; margin-bottom: 14px; }
+  /* Eyebrow */
+  .eyebrow { font-size: 11px; letter-spacing: 0.2em; margin-bottom: 12px; }
 
+  /* Prompt: big and readable */
   .prompt {
-    font-size: 28px;
+    font-size: 32px;
     letter-spacing: -0.025em;
     margin-bottom: 10px;
+    line-height: 1.1;
   }
 
+  /* Help text */
   .help {
-    font-size: 13px;
-    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 28px;
     max-width: 100%;
   }
+  .help em { font-size: 16px; }
 
-  .fields.row { flex-direction: column; }
-  .phone-row { flex-direction: column; }
-  .phone-row .country { flex: none; }
-  .date-row { gap: 8px; }
+  /* Fields: bigger, more padding */
+  .fields { gap: 12px; }
+  .fields.row { flex-direction: column !important; }
 
   .field {
-    padding: 12px 14px;
-    border-radius: 12px;
+    padding: 16px 18px;
+    border-radius: 14px;
   }
+  .field label { font-size: 11px; letter-spacing: 0.18em; margin-bottom: 2px; }
   .field input, .field textarea, .field select {
+    font-size: 17px;
+    padding: 4px 0;
+  }
+  .field input::placeholder, .field textarea::placeholder {
     font-size: 16px;
   }
 
+  /* Phone row: stack vertically */
+  .phone-row { flex-direction: column; gap: 12px; }
+  .phone-row .country { flex: none; width: 100%; }
+  .phone-row .number { width: 100%; }
+
+  /* Date row: keep horizontal but tighter */
+  .date-row { gap: 8px; }
+  .date-row .field { padding: 14px 14px; }
+
+  /* City dropdown */
+  .city-trigger { font-size: 17px; }
+  .city-menu { border-radius: 14px; }
+  .city-opt { padding: 14px 16px; font-size: 15px; }
+
+  /* Step nav: stack, full-width buttons */
   .step-nav {
-    margin-top: 24px;
-    flex-direction: column;
-    gap: 12px;
+    max-width: 100%;
+    margin-top: 32px;
+    flex-direction: column-reverse;
+    gap: 10px;
   }
   .step-nav-right {
     width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 10px;
   }
-  .btn-ghost { padding: 12px 18px; width: 100%; text-align: center; }
-  .btn-primary { padding: 16px 24px; width: 100%; justify-content: center; }
+  .hint { display: none; }
+  .btn-primary {
+    padding: 18px 28px;
+    font-size: 15px;
+    width: 100%;
+    justify-content: center;
+    border-radius: 14px;
+  }
+  .btn-ghost {
+    padding: 16px 20px;
+    font-size: 13px;
+    width: 100%;
+    text-align: center;
+    border-radius: 14px;
+  }
+  .btn-ghost.invisible { display: none; }
 
+  /* Review screen */
+  .review-list { margin-top: 8px; }
   .review-row {
-    grid-template-columns: 1fr;
-    gap: 4px;
-    padding: 12px 0;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+    padding: 14px 0;
   }
-  .review-row .key { font-size: 9px; }
-  .review-row .val { font-size: 14px; }
+  .review-row .key { font-size: 10px; grid-column: 1 / -1; }
+  .review-row .val { font-size: 16px; }
   .review-row .edit {
-    justify-self: start;
-    margin-top: 4px;
+    font-size: 11px;
+    padding: 6px 10px;
   }
 
-  .done h2 { font-size: 36px; }
-  .done p { font-size: 13px; }
-  .done .ref { font-size: 10px; }
+  /* Done screen */
+  .done { padding: 24px 0 0; }
+  .done .seal { width: 64px; height: 64px; font-size: 32px; margin-bottom: 28px; }
+  .done h2 { font-size: 36px; margin-bottom: 14px; }
+  .done p { font-size: 15px; max-width: 100%; }
+  .done .ref { font-size: 11px; margin-top: 28px; }
+  .done .next-step { margin-top: 40px; font-size: 17px; }
 
-  .city-menu {
-    border-radius: 12px;
-  }
+  .whisper { margin-top: 32px; font-size: 15px; }
 
-  .whisper { margin-top: 40px; font-size: 14px; }
-
+  /* Footer: stacked, centered */
   footer.foot {
     grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 24px 20px 28px;
+    gap: 12px;
+    padding: 24px 20px 32px;
     text-align: center;
+    font-size: 12px;
   }
   .foot .l, .foot .r {
     justify-content: center;
