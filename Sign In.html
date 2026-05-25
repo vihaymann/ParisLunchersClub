@@ -753,7 +753,11 @@
       e.preventDefault();
       if (btn.dataset.state !== 'idle') return;
 
-      const refCode = document.getElementById('memberNum').value.trim();
+      let refCode = document.getElementById('memberNum').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      // Normalize: insert hyphen after first 2 chars if missing (LUPQ19 → LU-PQ19)
+      if (refCode.length >= 3 && refCode[2] !== '-') {
+        refCode = refCode.slice(0, 2) + '-' + refCode.slice(2);
+      }
       const password = document.getElementById('passphrase').value.trim();
 
       if (!refCode || !password) {
@@ -763,9 +767,11 @@
       }
 
       set('loading', 'Verifying');
+      console.log('Signing in with:', refCode, password);
 
       try {
         const res = await window.TPLC.onboarding.verify(refCode, password);
+        console.log('Verify response:', res);
 
         if (res.ok) {
           set('granted', 'Welcome, ' + res.first_name);
