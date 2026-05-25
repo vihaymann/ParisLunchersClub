@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>My Space | Lunchers Club</title>
+<title>Le Carnet | Lunchers Club</title>
 <link rel="preload" as="image" href="assets/fork-cursor.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,6 +18,7 @@
 
 <style>
 :root {
+  /* Color */
   --bg: #0A0A09;
   --ink: #F4F1EA;
   --muted: #6E6B64;
@@ -28,11 +29,18 @@
   --ok: #4F9B65;
   --warn: #B58A3C;
   --danger: #C8513E;
-  --accent: #C9A37A;
+  --accent: #C9A37A;           /* legacy, unused on member surfaces */
+  --claret: #5C2A2D;           /* used only on Patron chip + served-day */
 
+  /* Type */
   --sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   --display: "Geist", ui-sans-serif, -apple-system, sans-serif;
   --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Layout */
+  --page-max: 760px;
+  --space-section: 56px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,12 +52,12 @@ body {
   color: var(--ink);
   font-family: var(--sans);
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============ APP SHELL: left rail + workspace ============ */
+/* ============ APP SHELL ============ */
 .app-shell {
   display: grid;
   grid-template-columns: 200px 1fr;
@@ -57,7 +65,7 @@ body {
 }
 .rail {
   border-right: 1px solid var(--line);
-  padding: 22px 16px;
+  padding: 26px 16px 22px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -68,31 +76,34 @@ body {
 }
 .rail .brand {
   font-family: var(--display);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink);
-  padding: 4px 10px 16px;
+  padding: 4px 10px 20px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 14px;
+  margin-bottom: 18px;
   line-height: 1.3;
 }
 .rail .brand .sub {
   display: block;
-  font-family: var(--sans);
-  font-size: 9.5px;
-  font-weight: 500;
-  letter-spacing: 0.32em;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--muted);
-  margin-top: 6px;
+  margin-top: 8px;
 }
 .rail-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
+  gap: 12px;
+  padding: 10px 10px;
   border-radius: 8px;
+  font-family: var(--sans);
   font-size: 13px;
   color: var(--muted-2);
   font-weight: 500;
@@ -115,97 +126,108 @@ body {
   color: currentColor;
 }
 .rail-item .label-text { flex: 1; }
+
 .rail .rail-foot {
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 18px;
   border-top: 1px solid var(--line);
 }
 .rail .rail-who {
   font-family: var(--serif);
   font-style: italic;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted-2);
-  padding: 4px 10px 6px;
+  padding: 4px 10px 8px;
 }
-.rail .rail-logout {
+.rail .rail-logout-link {
   appearance: none;
   border: 0;
   background: transparent;
   color: var(--muted);
-  font: inherit;
+  font-family: var(--sans);
   font-size: 11px;
-  font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  padding: 10px 10px;
+  padding: 6px 10px;
   text-align: left;
   width: 100%;
   border-radius: 6px;
-  display: inline-flex; align-items: center; gap: 8px;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color 0.2s ease;
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
 }
-.rail .rail-logout:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 5%, transparent); }
+.rail .rail-logout-link:hover { color: var(--ink); }
 
-.workspace { min-width: 0; }
+.workspace { min-width: 0; position: relative; }
 
 /* ============ Pages ============ */
-.page { display: none; padding: 28px 40px 60px; max-width: 720px; margin: 0 auto; }
+.page {
+  display: none;
+  padding: 56px 40px 96px;
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
 .page.active { display: block; }
 
-/* ============ Typography ============ */
-.greeting {
-  padding: 0;
-}
-#homePage .greeting {
-  padding: 0;
-}
-.greeting h1 {
-  font-family: var(--display);
-  font-size: 32px; font-weight: 500;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-  margin-top: 6px;
-}
-.greeting-sub {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 15px;
-  color: var(--muted-2);
-  margin-top: 8px;
-  opacity: 0;
-  animation: fadeIn 0.6s ease 0.3s both;
+/* ============ Editorial typography ============ */
+.eyebrow {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .italic { font-family: var(--serif); font-style: italic; font-weight: 400; }
-.eyebrow {
-  font-size: 10px; font-weight: 500;
-  letter-spacing: 0.28em; text-transform: uppercase;
+.muted { color: var(--muted); }
+.muted-2 { color: var(--muted-2); }
+
+.page-title {
+  font-family: var(--display);
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: -0.028em;
+  line-height: 1.08;
+  margin-top: 10px;
+}
+.page-title .italic { font-weight: 400; }
+
+.page-tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--muted-2);
+  margin-top: 16px;
+  line-height: 1.5;
+  max-width: 540px;
+}
+
+/* ============ Sections ============ */
+.section { margin-top: var(--space-section); }
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 22px;
+}
+.section-title {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+}
+.section-aside {
+  font-family: var(--sans);
+  font-size: 12px;
   color: var(--muted);
-  display: flex; align-items: center; gap: 8px;
+  font-variant-numeric: tabular-nums;
 }
-.eyebrow::before {
-  content: '';
-  display: inline-block;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--muted);
-  flex-shrink: 0;
-}
-.help {
-  font-size: 14px; color: var(--muted-2); margin-top: 8px; line-height: 1.5;
-}
-.muted { color: var(--muted); font-size: 13px; }
 
-/* ============ Animation ============ */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.fade-in { animation: fadeIn 0.45s ease both; }
-
+/* ============ Animations ============ */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); filter: blur(2px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .slide-up { animation: slideUp 0.5s ease both; animation-delay: var(--delay, 0ms); }
 
@@ -216,194 +238,121 @@ body {
 }
 .shake { animation: shake 0.35s ease; }
 
-@keyframes checkPop {
-  0% { transform: scale(0); opacity: 0; }
-  60% { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes cardPop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-  100% { transform: scale(1); }
-}
-.pop { animation: cardPop 0.2s ease; }
-
-@keyframes counterPulse {
-  0% { opacity: 0.6; }
-  100% { opacity: 1; }
-}
-
-/* ============ Stat cards ============ */
-.stat-cards {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-  margin-top: 24px;
-}
-.stat-card {
-  background: var(--field);
+/* ============ Today — Next lunch card ============ */
+.next-lunch {
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 20px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  border-radius: 12px;
+  padding: 26px 28px 28px;
 }
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px color-mix(in oklch, var(--ink) 4%, transparent);
-  border-color: color-mix(in oklch, var(--ink) 18%, var(--line));
+.next-lunch .restaurant {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.15;
+  color: var(--ink);
 }
-.stat-card .number {
-  font-family: var(--display);
-  font-size: 38px; font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-.stat-card .number .small {
-  font-size: 20px; font-weight: 400;
-  color: var(--muted);
-}
-.stat-card .label {
-  font-size: 11px; color: var(--muted);
-  margin-top: 6px;
-  letter-spacing: 0.04em;
-}
-
-/* ============ Sections ============ */
-.section { margin-top: 36px; }
-.section-head {
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 16px;
-}
-.profile-section { margin-top: 32px; }
-.profile-section .section-head { margin-bottom: 0; }
-
-/* ============ Empty / CTA card ============ */
-.empty-card {
-  background: var(--field);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 24px;
-}
-.empty-card p { font-size: 14px; line-height: 1.55; }
-.empty-card .muted { margin-top: 4px; }
-.empty-card.placeholder {
-  border-style: dashed;
-  border-color: color-mix(in oklch, var(--ink) 18%, var(--line));
-  text-align: center;
-  padding: 32px 24px;
-}
-.empty-card.placeholder .empty-icon {
-  display: block;
-  margin: 0 auto 14px;
-  opacity: 0.5;
-}
-.empty-card.placeholder p:first-of-type {
+.next-lunch .when {
   font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 14px;
+}
+.next-lunch .with {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 22px;
+}
+.next-lunch .with .avatar { filter: blur(7px); transform: scale(0.96); }
+.next-lunch .with .name {
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 500;
+}
+.next-lunch .with .reveal {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+.next-lunch .editorial {
+  font-family: var(--serif);
+  font-style: italic;
   font-size: 14px;
   color: var(--muted-2);
+  margin-top: 20px;
+  line-height: 1.55;
 }
 
-/* ============ Connection cards ============ */
-.connection-card {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 4px 14px 12px;
-  border-bottom: 1px solid var(--line);
-  border-left: 2px solid transparent;
-  transition: transform 0.15s ease, border-left-color 0.15s ease, background 0.15s ease;
-  border-radius: 4px;
-}
-.connection-card:hover {
-  transform: translateX(2px);
-  border-left-color: var(--ink);
-  background: color-mix(in oklch, var(--ink) 2%, transparent);
-}
-.connection-card:last-child { border-bottom: none; }
-.avatar {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--field); border: 1px solid var(--line);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--display);
-  font-size: 14px; font-weight: 500;
+.next-lunch-empty {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
   color: var(--muted-2);
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-.connection-card:hover .avatar { transform: scale(1.05); }
-
-/* Avatar color palette */
-.av-0 { background: color-mix(in oklch, #C9A37A 15%, var(--field)); color: #C9A37A; border-color: color-mix(in oklch, #C9A37A 25%, var(--line)); }
-.av-1 { background: color-mix(in oklch, #7A9B6E 15%, var(--field)); color: #7A9B6E; border-color: color-mix(in oklch, #7A9B6E 25%, var(--line)); }
-.av-2 { background: color-mix(in oklch, #B07A8A 15%, var(--field)); color: #B07A8A; border-color: color-mix(in oklch, #B07A8A 25%, var(--line)); }
-.av-3 { background: color-mix(in oklch, #7A8FB0 15%, var(--field)); color: #7A8FB0; border-color: color-mix(in oklch, #7A8FB0 25%, var(--line)); }
-.av-4 { background: color-mix(in oklch, #B0836E 15%, var(--field)); color: #B0836E; border-color: color-mix(in oklch, #B0836E 25%, var(--line)); }
-.connection-card .info { flex: 1; min-width: 0; }
-.connection-card .name { font-weight: 500; font-size: 14px; }
-.connection-card .meta {
-  font-size: 12px; color: var(--muted);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.connection-card .date {
-  font-size: 11px; color: var(--muted);
-  flex-shrink: 0; text-align: right;
+  line-height: 1.55;
+  max-width: 480px;
 }
 
-/* ============ Week grid ============ */
+/* ============ Today — Week grid ============ */
 .week-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
-  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
 }
 .day-card {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 18px 0 14px;
-  background: var(--field);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 0 18px;
+  background: transparent;
   border: 1px solid var(--line);
   border-radius: 12px;
   font-family: var(--sans);
-  transition: all 0.2s;
+  transition: border-color 0.2s ease, background 0.2s ease;
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
-.day-card:not([disabled]):not(.selected):hover {
-  border-color: color-mix(in oklch, var(--ink) 30%, var(--line));
-  background: color-mix(in oklch, var(--ink) 3%, var(--field));
+.day-card:not(.selected):hover {
+  border-color: color-mix(in oklch, var(--ink) 22%, var(--line));
+  background: color-mix(in oklch, var(--ink) 2%, transparent);
 }
 .day-card.selected {
-  border-color: var(--ok);
-  background: color-mix(in oklch, var(--ok) 8%, var(--field));
+  border-color: color-mix(in oklch, var(--ink) 18%, var(--line));
+  background: transparent;
 }
 .day-name {
-  font-size: 10px; font-weight: 600;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--ink);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .day-num {
   font-family: var(--display);
-  font-size: 22px; font-weight: 500;
-  margin-top: 6px;
+  font-size: 24px;
+  font-weight: 500;
+  margin-top: 8px;
   color: var(--ink);
+  line-height: 1;
+  padding-bottom: 4px;
+  position: relative;
 }
-.day-check {
-  font-size: 12px; color: var(--ok);
-  height: 16px; margin-top: 4px;
-  display: inline-block;
-}
-.day-card.selected .day-check { animation: checkPop 0.3s ease both; }
-
-.month-counter {
-  text-align: center;
-  font-size: 12px; color: var(--muted);
-  margin-top: 14px;
-  letter-spacing: 0.04em;
-}
-.month-counter span {
-  font-family: var(--display);
-  font-weight: 600; color: var(--ink);
+.day-card.selected .day-num::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 2px;
+  background-image: radial-gradient(circle, var(--claret) 0.9px, transparent 1.2px);
+  background-size: 4px 2px;
+  background-repeat: repeat-x;
 }
 
-/* ============ Map ============ */
+/* ============ Today — Map ============ */
 .map-wrap {
-  width: 100%; height: 280px;
-  border-radius: 14px;
+  width: 100%;
+  height: 180px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--line);
   position: relative;
@@ -416,7 +365,6 @@ body {
   background: linear-gradient(to bottom, var(--bg), transparent);
   z-index: 400;
   pointer-events: none;
-  border-radius: 14px 14px 0 0;
 }
 .map-wrap .leaflet-control-attribution { display: none; }
 
@@ -426,219 +374,507 @@ body {
 }
 .radius-btn {
   flex: 1;
-  background: var(--field);
+  background: transparent;
   border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--muted);
   font-family: var(--sans);
-  font-size: 12px; font-weight: 500;
+  font-size: 12px;
+  font-weight: 500;
   padding: 10px;
   text-align: center;
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
-.radius-btn:hover { border-color: var(--muted); color: var(--ink); }
+.radius-btn:hover { border-color: color-mix(in oklch, var(--ink) 20%, var(--line)); color: var(--ink); }
 .radius-btn.active {
   border-color: var(--ink);
   color: var(--ink);
-  background: color-mix(in oklch, var(--ink) 5%, var(--field));
+  background: color-mix(in oklch, var(--ink) 4%, transparent);
 }
-.rec-label {
-  display: block;
-  font-size: 8px;
-  letter-spacing: 0.1em;
+
+/* ============ Room — Connection cards ============ */
+.connection-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 8px;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s ease, padding-left 0.15s ease;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+}
+.connection-card:hover {
+  background: color-mix(in oklch, var(--ink) 2.5%, transparent);
+  padding-left: 14px;
+}
+.connection-card:last-child { border-bottom: 0; }
+.connection-card .info { flex: 1; min-width: 0; }
+.connection-card .name {
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 500;
+}
+.connection-card .meta {
+  font-size: 13px;
+  color: var(--muted-2);
+  margin-top: 2px;
+}
+.connection-card .from {
+  font-size: 10px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--muted);
+  margin-top: 8px;
+}
+.connection-card .date {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   margin-top: 2px;
 }
 
-/* ============ Profile rows ============ */
-.profil-row {
-  display: flex; justify-content: space-between; align-items: baseline;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 13.5px;
+/* Avatar palette (kept) */
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--field); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display);
+  font-size: 14px; font-weight: 500;
+  color: var(--muted-2);
+  flex-shrink: 0;
 }
-.profil-row .k {
-  color: var(--muted);
-  font-size: 12px; font-weight: 500;
-  letter-spacing: 0.06em;
-  flex-shrink: 0; min-width: 100px;
-}
-.profil-row .v {
-  text-align: right;
-  color: var(--ink);
-  word-break: break-word;
-}
+.av-0 { background: color-mix(in oklch, #C9A37A 14%, var(--field)); color: #C9A37A; border-color: color-mix(in oklch, #C9A37A 22%, var(--line)); }
+.av-1 { background: color-mix(in oklch, #7A9B6E 14%, var(--field)); color: #7A9B6E; border-color: color-mix(in oklch, #7A9B6E 22%, var(--line)); }
+.av-2 { background: color-mix(in oklch, #B07A8A 14%, var(--field)); color: #B07A8A; border-color: color-mix(in oklch, #B07A8A 22%, var(--line)); }
+.av-3 { background: color-mix(in oklch, #7A8FB0 14%, var(--field)); color: #7A8FB0; border-color: color-mix(in oklch, #7A8FB0 22%, var(--line)); }
+.av-4 { background: color-mix(in oklch, #B0836E 14%, var(--field)); color: #B0836E; border-color: color-mix(in oklch, #B0836E 22%, var(--line)); }
 
-.btn-logout {
-  display: block; width: 100%;
-  background: none;
-  border: 1px solid var(--danger);
-  border-radius: 10px;
-  color: var(--danger);
+/* ============ Room — Recently joined ============ */
+.recently-joined {
+  margin-top: 64px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.recently-joined .label {
   font-family: var(--sans);
-  font-size: 13px; font-weight: 500;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 14px;
-  margin-top: 20px;
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 14px;
+}
+.recently-joined .body {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted-2);
+  line-height: 1.8;
+}
+
+/* ============ Room — Right-rail spread ============ */
+.rail-spread-backdrop {
+  position: fixed; inset: 0;
+  background: color-mix(in oklch, #000 60%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s ease;
+  z-index: 199;
+}
+.rail-spread-backdrop.visible { opacity: 1; pointer-events: auto; }
+
+.rail-spread {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 380px;
+  max-width: 92vw;
+  background: #0c0c0b;
+  border-left: 1px solid var(--line);
+  padding: 36px 32px 32px;
+  transform: translateX(100%);
+  transition: transform 0.32s ease;
+  z-index: 200;
+  overflow-y: auto;
+}
+.rail-spread.open { transform: translateX(0); }
+.rail-spread .close {
+  position: absolute; top: 18px; right: 22px;
+  background: none; border: 0;
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--muted);
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
-  transition: all 0.18s;
 }
-.btn-logout:hover {
-  background: color-mix(in oklch, var(--danger) 10%, transparent);
-}
-
-/* ============ Loading ============ */
-.loading {
-  text-align: center; padding: 40px;
-  color: var(--muted); font-size: 13px;
-}
-
-/* ============ Autofill kill ============ */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px var(--field) inset !important;
-  -webkit-text-fill-color: var(--ink) !important;
-  transition: background-color 9999s ease-out 0s, color 9999s ease-out 0s;
-}
-
-/* ============ Recommend / Invite ============ */
-.invite-form {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-  margin-top: 20px;
-}
-.invite-form .full { grid-column: 1 / -1; }
-.invite-field {
-  display: flex; flex-direction: column; gap: 4px;
-}
-.invite-field label {
-  font-size: 10px; font-weight: 500;
-  letter-spacing: 0.16em; text-transform: uppercase;
+.rail-spread .close:hover { color: var(--ink); }
+.rail-spread .spread-eyebrow {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
   color: var(--muted);
 }
-.invite-field input {
-  background: var(--field);
-  border: 1px solid var(--field-line);
-  border-radius: 8px;
+.rail-spread .spread-name {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-top: 10px;
+}
+.rail-spread .spread-meta {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted-2);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.rail-spread .spread-block {
+  margin-top: 32px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.rail-spread .spread-block .k {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.rail-spread .spread-block .v {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+.rail-spread .spread-block .v.italic {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted-2);
+}
+.rail-spread .spread-note {
+  margin-top: 36px;
+  padding: 14px 16px;
+  border: 1px dashed color-mix(in oklch, var(--ink) 12%, var(--line));
+  border-radius: 10px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+  transition: color 0.2s, border-color 0.2s;
+}
+.rail-spread .spread-note:hover {
+  color: var(--ink);
+  border-color: color-mix(in oklch, var(--ink) 28%, var(--line));
+}
+
+/* ============ Le Carnet — Membership card ============ */
+.member-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 32px 30px 26px;
+  background:
+    linear-gradient(135deg,
+      color-mix(in oklch, var(--ink) 5%, var(--field)) 0%,
+      var(--field) 60%,
+      color-mix(in oklch, var(--bg) 60%, var(--field)) 100%);
+  border: 1px solid color-mix(in oklch, var(--ink) 6%, var(--line));
+  margin-top: 8px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.member-card::before {
+  /* subtle paper grain */
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 18% 24%, rgba(244,241,234,0.025) 0, transparent 35%),
+    radial-gradient(circle at 82% 76%, rgba(244,241,234,0.018) 0, transparent 38%),
+    radial-gradient(circle at 60% 12%, rgba(244,241,234,0.012) 0, transparent 30%);
+  pointer-events: none;
+  z-index: 0;
+}
+.member-card .watermark {
+  position: absolute;
+  right: -28px;
+  bottom: -80px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 280px;
+  line-height: 1;
+  color: color-mix(in oklch, var(--ink) 3.5%, transparent);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+.member-card > * { position: relative; z-index: 1; }
+.member-card .card-eyebrow {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.member-card .card-name {
+  font-family: var(--display);
+  font-size: 38px;
+  font-weight: 500;
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+  margin-top: 14px;
+}
+.member-card .card-since {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted-2);
+  margin-top: 8px;
+}
+.member-card .card-code {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 36px;
+}
+.member-card .card-chip {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  z-index: 2;
+}
+.member-card .card-chip.standard {
+  color: var(--muted-2);
+  border: 1px solid color-mix(in oklch, var(--ink) 16%, var(--line));
+  background: transparent;
+}
+.member-card .card-chip.patron {
+  color: var(--ink);
+  background: var(--claret);
+}
+
+/* ============ Le Carnet — Typed letter details ============ */
+.detail-block { margin-top: 8px; }
+.detail-line {
+  font-size: 15px;
+  line-height: 1.95;
+  color: var(--ink);
+  border-bottom: 1px solid color-mix(in oklch, var(--line) 60%, transparent);
+  padding: 4px 0;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.detail-line:last-child { border-bottom: 0; }
+.detail-line .k {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted-2);
+  flex-shrink: 0;
+}
+.detail-line .v {
+  font-family: var(--sans);
+  color: var(--ink);
+  flex: 1;
+}
+.detail-line .pencil {
+  opacity: 0;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+  transition: opacity 0.18s ease, color 0.18s ease;
+}
+.detail-line:hover .pencil { opacity: 1; }
+.detail-line .pencil:hover { color: var(--ink); }
+
+.credits-line {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--muted-2);
+  margin-top: 12px;
+}
+
+/* ============ Le Carnet — Invitations ============ */
+.invite-headline {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  margin-bottom: 6px;
+}
+.invite-quota-line {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted-2);
+  margin-bottom: 20px;
+}
+
+.invite-form-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr auto;
+  gap: 8px;
+  align-items: stretch;
+}
+.invite-form-compact input {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--field-line);
   color: var(--ink);
   font-family: var(--sans);
   font-size: 14px;
-  padding: 11px 14px;
+  padding: 10px 4px 9px;
   outline: none;
   transition: border-color 0.2s;
 }
-.invite-field input:focus {
-  border-color: var(--accent);
-}
-.invite-field input::placeholder {
-  color: var(--muted); opacity: 0.6;
-}
-.btn-generate {
-  grid-column: 1 / -1;
-  background: var(--ink);
-  color: var(--bg);
-  border: none;
-  border-radius: 10px;
+.invite-form-compact input:focus { border-bottom-color: var(--ink); }
+.invite-form-compact input::placeholder { color: var(--muted); }
+.invite-form-compact .submit-link {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  color: var(--ink);
   font-family: var(--sans);
-  font-size: 13px; font-weight: 600;
-  letter-spacing: 0.06em;
-  padding: 14px;
-  margin-top: 4px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  padding: 0 8px 9px;
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
-  transition: opacity 0.2s;
+  transition: color 0.2s, border-color 0.2s, opacity 0.2s;
 }
-.btn-generate:hover { opacity: 0.88; }
-.btn-generate:disabled { opacity: 0.4; cursor: default !important; }
+.invite-form-compact .submit-link:hover { color: var(--muted-2); }
+.invite-form-compact .submit-link:disabled { opacity: 0.35; cursor: default !important; }
 
+.invite-error {
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 12px;
+}
 .invite-link-box {
   background: var(--field);
-  border: 1px solid var(--ok);
-  border-radius: 12px;
-  padding: 16px;
-  margin-top: 16px;
+  border: 1px solid color-mix(in oklch, var(--ink) 12%, var(--line));
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 14px;
   display: none;
 }
 .invite-link-box.visible { display: block; }
 .invite-link-box .label {
-  font-size: 10px; font-weight: 500;
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--ok);
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
   margin-bottom: 8px;
 }
 .invite-link-box .link-row {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 10px;
 }
 .invite-link-box .link-url {
   flex: 1;
-  font-family: var(--sans);
-  font-size: 12px;
+  font-family: var(--mono);
+  font-size: 11px;
   color: var(--muted-2);
   word-break: break-all;
   line-height: 1.4;
 }
 .btn-copy {
   background: none;
-  border: 1px solid var(--field-line);
-  border-radius: 6px;
+  border: 0;
+  border-bottom: 1px solid var(--muted);
   color: var(--muted-2);
   font-family: var(--sans);
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.06em;
-  padding: 6px 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0 4px 3px;
   white-space: nowrap;
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
   transition: color 0.2s, border-color 0.2s;
 }
-.btn-copy:hover { color: var(--ink); border-color: var(--muted); }
+.btn-copy:hover { color: var(--ink); border-color: var(--ink); }
 
 .invite-list { margin-top: 28px; }
-.invite-list .section-head { margin-bottom: 0; }
+.invite-list .section-head { margin-bottom: 14px; }
 
 .status-pill {
   display: inline-block;
+  font-family: var(--sans);
   font-size: 10px; font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 2px 8px;
   border-radius: 4px;
 }
-.status-pill.pending {
-  color: var(--warn);
-  background: color-mix(in oklch, var(--warn) 12%, transparent);
-}
-.status-pill.submitted {
-  color: var(--muted-2);
-  background: color-mix(in oklch, var(--muted-2) 12%, transparent);
-}
-.status-pill.accepted {
-  color: var(--ok);
-  background: color-mix(in oklch, var(--ok) 12%, transparent);
-}
-.status-pill.onboarded {
-  color: var(--accent);
-  background: color-mix(in oklch, var(--accent) 12%, transparent);
-}
-.status-pill.expired {
-  color: var(--danger);
-  background: color-mix(in oklch, var(--danger) 12%, transparent);
-}
+.status-pill.pending   { color: var(--warn);    background: color-mix(in oklch, var(--warn) 12%, transparent); }
+.status-pill.submitted { color: var(--muted-2); background: color-mix(in oklch, var(--muted-2) 12%, transparent); }
+.status-pill.accepted  { color: var(--ok);      background: color-mix(in oklch, var(--ok) 12%, transparent); }
+.status-pill.onboarded { color: var(--ink);     background: color-mix(in oklch, var(--ink) 10%, transparent); }
+.status-pill.expired   { color: var(--danger);  background: color-mix(in oklch, var(--danger) 12%, transparent); }
 .invite-expiry {
   margin-top: 2px;
+  font-family: var(--mono);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
   letter-spacing: 0.04em;
 }
 
-.invite-error {
-  font-size: 13px;
-  color: var(--danger);
-  margin-top: 8px;
+/* ============ Le Carnet — Fine print ============ */
+.fine-print {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.fine-print button,
+.fine-print a {
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+  transition: color 0.2s ease;
+}
+.fine-print button:hover,
+.fine-print a:hover { color: var(--ink); }
+
+/* ============ Loading ============ */
+.loading {
+  text-align: center; padding: 40px 0;
+  color: var(--muted); font-size: 13px;
+  font-family: var(--serif); font-style: italic;
 }
 
-/* ============ Responsive: sidebar → bottom bar on mobile ============ */
+/* ============ Autofill kill ============ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  -webkit-text-fill-color: var(--ink) !important;
+  transition: background-color 9999s ease-out 0s, color 9999s ease-out 0s;
+}
+
+/* ============ Responsive ============ */
 @media (max-width: 768px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -652,7 +888,7 @@ input:-webkit-autofill:focus {
     flex-direction: row;
     justify-content: space-around;
     padding: 0;
-    border-right: none;
+    border-right: 0;
     border-top: 1px solid var(--line);
     z-index: 100;
     padding-bottom: env(safe-area-inset-bottom, 0);
@@ -665,7 +901,7 @@ input:-webkit-autofill:focus {
     padding: 12px 0 10px;
     border-radius: 0;
     font-size: 9.5px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     text-align: center;
     justify-content: center;
@@ -676,18 +912,24 @@ input:-webkit-autofill:focus {
   .rail-item .glyph svg { width: 22px; height: 22px; }
   .rail-item .label-text { flex: none; }
 
-  .page { padding: 28px 20px 100px; max-width: 560px; }
-  .greeting h1 { font-size: 28px; }
-  .stat-card .number { font-size: 32px; }
-  .day-num { font-size: 17px; }
-  .day-name { font-size: 8px; }
-  .map-wrap { height: 240px; }
+  .page { padding: 32px 22px 100px; max-width: 580px; }
+  .page-title { font-size: 32px; }
+  .page-tagline { font-size: 15px; }
+  .next-lunch .restaurant { font-size: 22px; }
+  .day-num { font-size: 20px; }
+  .map-wrap { height: 200px; }
+  .member-card { padding: 26px 24px 22px; }
+  .member-card .card-name { font-size: 30px; }
+  .member-card .watermark { font-size: 200px; }
+  .invite-form-compact { grid-template-columns: 1fr 1fr; }
+  .invite-form-compact .submit-link { grid-column: 1 / -1; padding: 12px 0 0; border-bottom: 0; text-decoration: underline; text-underline-offset: 4px; }
+  .rail-spread { width: 100%; max-width: 100%; }
 }
 
 @media (max-width: 380px) {
-  .week-grid { gap: 5px; }
-  .day-card { padding: 10px 0 8px; }
-  .day-num { font-size: 15px; }
+  .week-grid { gap: 6px; }
+  .day-card { padding: 16px 0 12px; }
+  .day-num { font-size: 18px; }
 }
 </style>
 </head>
@@ -699,42 +941,63 @@ input:-webkit-autofill:focus {
 
   <!-- ============ Left rail ============ -->
   <aside class="rail">
-    <div class="brand">Lunchers Club<span class="sub">Member</span></div>
+    <div class="brand">Lunchers<span class="sub" id="brandDate"></span></div>
 
-    <button class="rail-item active" data-page="home">
-      <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-8 9 8v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9z"/></svg></span>
-      <span class="label-text">Home</span>
+    <button class="rail-item active" data-page="today">
+      <span class="glyph">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="16" rx="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+          <line x1="8" y1="3" x2="8" y2="7"/>
+          <line x1="16" y1="3" x2="16" y2="7"/>
+        </svg>
+      </span>
+      <span class="label-text">Today</span>
     </button>
+
+    <button class="rail-item" data-page="room">
+      <span class="glyph">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="8" r="3.5"/>
+          <path d="M2 21a7 7 0 0114 0"/>
+          <circle cx="17" cy="9" r="2.6"/>
+          <path d="M15 21a6 6 0 016-3"/>
+        </svg>
+      </span>
+      <span class="label-text">Room</span>
+    </button>
+
     <button class="rail-item" data-page="carnet">
-      <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
-      <span class="label-text">Contacts</span>
-    </button>
-    <button class="rail-item" data-page="recommend">
-      <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span>
-      <span class="label-text">Recommend</span>
-    </button>
-    <button class="rail-item" data-page="profil">
-      <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a8 8 0 00-16 0v2"/></svg></span>
-      <span class="label-text">Profile</span>
+      <span class="glyph">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 4h11a2 2 0 012 2v14a1 1 0 01-1 1H6a2 2 0 01-2-2V5a1 1 0 011-1z"/>
+          <line x1="9" y1="9" x2="15" y2="9"/>
+          <line x1="9" y1="13" x2="13" y2="13"/>
+        </svg>
+      </span>
+      <span class="label-text">Carnet</span>
     </button>
 
     <div class="rail-foot">
       <div class="rail-who" id="railWho"></div>
-      <button class="rail-logout" id="sidebarLogout">Sign out</button>
+      <button class="rail-logout-link" id="sidebarLogout">Sign out</button>
     </div>
   </aside>
 
-  <!-- ============ Main content ============ -->
+  <!-- ============ Workspace ============ -->
   <main class="workspace">
-    <section class="page active" data-page="home" id="homePage">
-      <div class="loading">Loading...</div>
+    <section class="page active" data-page="today" id="todayPage">
+      <div class="loading">Loading…</div>
     </section>
-
+    <section class="page" data-page="room" id="roomPage"></section>
     <section class="page" data-page="carnet" id="carnetPage"></section>
 
-    <section class="page" data-page="recommend" id="recommendPage"></section>
-
-    <section class="page" data-page="profil" id="profilPage"></section>
+    <!-- Right-rail spread (connection detail) -->
+    <div class="rail-spread-backdrop" id="spreadBackdrop"></div>
+    <aside class="rail-spread" id="railSpread" aria-hidden="true">
+      <button class="close" id="spreadClose" aria-label="Close">×</button>
+      <div id="spreadBody"></div>
+    </aside>
   </main>
 
 </div>
