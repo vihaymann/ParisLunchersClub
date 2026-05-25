@@ -11,7 +11,7 @@ ALTER TABLE applications ADD COLUMN IF NOT EXISTS onboarded BOOLEAN NOT NULL DEF
 CREATE OR REPLACE FUNCTION generate_temp_password()
 RETURNS TEXT AS $$
 DECLARE
-  chars TEXT := 'abcdefghjkmnpqrstuvwxyz23456789';
+  chars TEXT := '0123456789';
   pwd TEXT := '';
 BEGIN
   FOR i IN 1..8 LOOP
