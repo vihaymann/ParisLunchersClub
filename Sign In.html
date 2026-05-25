@@ -593,16 +593,16 @@
 
     <form class="signin" id="signinForm" autocomplete="off" novalidate>
       <div class="field tab" id="fieldMember">
-        <label for="memberNum">Member number</label>
+        <label for="memberNum">Member code</label>
         <input
           id="memberNum"
           name="member"
           type="text"
-          inputmode="numeric"
-          placeholder="0000 0000"
-          maxlength="11"
+          placeholder="LU-XX99"
+          maxlength="8"
           autocomplete="off"
           spellcheck="false"
+          style="text-transform:uppercase"
         />
       </div>
 
@@ -698,13 +698,12 @@
     input.addEventListener('input', () => f.classList.remove('error'));
   });
 
-  /* ============ Member number formatting ============ */
+  /* ============ Member code formatting ============ */
   (function() {
     const inp = document.getElementById('memberNum');
     inp.addEventListener('input', (e) => {
-      let v = e.target.value.replace(/\D/g, '').slice(0, 8);
-      if (v.length > 4) v = v.slice(0, 4) + ' ' + v.slice(4);
-      e.target.value = v;
+      // Allow letters, digits, and hyphens for ref codes like LU-PQ19
+      e.target.value = e.target.value.replace(/[^a-zA-Z0-9\-]/g, '').slice(0, 8).toUpperCase();
     });
   })();
 
