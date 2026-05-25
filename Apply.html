@@ -2163,7 +2163,8 @@ function submit() {
       const record = await window.TPLC.submitApplication(state.data);
       refCode = record.refCode;
     } catch (e) {
-      refCode = generateRefCode();
+      console.error('Submit failed:', e);
+      refCode = 'ERROR';
     }
     wrap.innerHTML = `
       <div class="step active done">
