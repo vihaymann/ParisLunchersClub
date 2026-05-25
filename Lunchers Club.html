@@ -159,6 +159,20 @@
     background: currentColor;
     opacity: 0.45;
   }
+  .invite-ticker {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    letter-spacing: 0.005em;
+    text-transform: none;
+    color: var(--muted-2);
+    transition: opacity 0.32s ease;
+    display: inline-block;
+    min-width: 260px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .invite-ticker.fading { opacity: 0; }
 
   .headline {
     font-family: var(--display);
@@ -359,7 +373,7 @@
 
   <!-- ============ HERO ============ -->
   <main class="stage">
-    <div class="invite"></div>
+    <div class="invite"><span class="invite-ticker" id="inviteTicker">Membership Committee reviewing 38 applications this week.</span></div>
 
     <h1 class="headline">
       <span>Lunch with</span>
@@ -475,6 +489,71 @@
     reelWrap.title = 'Spin again';
 
     window.addEventListener('resize', () => measure());
+  })();
+
+  /* ============ Live ticker (fixture social proof) ============ */
+  (function() {
+    const el = document.getElementById('inviteTicker');
+    if (!el) return;
+    const LINES = [
+      // Joins
+      'Eva, fund partner — joined two hours ago.',
+      'Maxime, gallery director — accepted Thursday.',
+      'Léa, editor at Vogue Paris — joined last Friday.',
+      'Antoine, restaurant critic — accepted last night.',
+      'Hugo, art dealer — confirmed for Sunday brunch.',
+      'Mathilde, gallery owner — joined this morning.',
+      'Sophie, fund partner — accepted this season.',
+      'Olivier, anonymous donor — renewed for 2026.',
+      'Charlotte, museum curator — onboarded this week.',
+      'A composer joined the room. We won’t say more.',
+      // Applications & committee
+      'Membership Committee reviewing 38 applications this week.',
+      'Camille’s application — third pass at committee.',
+      'Émile, sponsor pending. Quiet weeks ahead.',
+      'A scientist applied. Subject: longevity.',
+      'Three applications referred by the same member. Rare.',
+      'Eight new applications since Tuesday.',
+      'Brussels member visiting Paris next week.',
+      'Acceptance rate this season: roughly 9%.',
+      // Bookings & rooms
+      'Marais table for two — booked this morning.',
+      'Saint-Germain — booked for Thursday.',
+      'Le Marais fully booked through next week.',
+      'Le Passage fully booked. Try Pigalle this week.',
+      'An editor and a chef matched for Wednesday.',
+      'Three founders pairing for lunch on rue de Seine.',
+      'Saint-Germain wait: 11 days.',
+      'Anonymous luncher requested Sunday. Granted.',
+      // Quiet pride & refusals
+      'A founder declined the offer. We respect it.',
+      'Membership pause requested by two members this month.',
+      'Press inquiry: declined.',
+      'An invitation expired this morning. The slot returns.',
+      'Two anonymous donors joined this season.',
+      'Waitlist: roughly four months without a referral.'
+    ];
+
+    // Fisher-Yates shuffle so each session sees a fresh order
+    function shuffle(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    const deck = shuffle(LINES.slice());
+    let idx = 0;
+    el.textContent = deck[idx];
+
+    setInterval(() => {
+      el.classList.add('fading');
+      setTimeout(() => {
+        idx = (idx + 1) % deck.length;
+        el.textContent = deck[idx];
+        el.classList.remove('fading');
+      }, 320);
+    }, 4000);
   })();
 </script>
 

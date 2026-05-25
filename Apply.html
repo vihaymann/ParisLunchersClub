@@ -723,6 +723,105 @@ main.stage {
 }
 .review-row .edit:hover { color: var(--ink); background: color-mix(in oklch, var(--ink) 8%, transparent); }
 
+/* ============ Application strength ============ */
+.strength-block {
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px 20px;
+  margin-bottom: 28px;
+}
+.strength-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px;
+}
+.strength-eyebrow {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--muted);
+}
+.strength-score {
+  font-family: var(--display);
+  display: inline-flex; align-items: baseline; gap: 6px;
+}
+.strength-num {
+  font-size: 36px; font-weight: 600; letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.strength-denom {
+  font-size: 16px; font-weight: 400;
+  color: var(--muted);
+}
+.strength-bar {
+  height: 5px; border-radius: 999px;
+  background: color-mix(in oklch, var(--ink) 6%, transparent);
+  margin-top: 12px; overflow: hidden;
+}
+.strength-bar-fill {
+  height: 100%; border-radius: 999px;
+  transition: background 0.3s ease;
+}
+.strength-ok    .strength-bar-fill { background: var(--ok); }
+.strength-warn  .strength-bar-fill { background: var(--warn); }
+.strength-danger .strength-bar-fill { background: var(--danger); }
+.strength-label {
+  margin-top: 10px;
+  font-size: 13px; color: var(--muted-2);
+  line-height: 1.5;
+}
+
+/* ============ References — multi-row ============ */
+.ref-row {
+  display: flex; flex-direction: column; gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed color-mix(in oklch, var(--ink) 10%, transparent);
+}
+.ref-row[data-row="1"] { border-top: none; padding-top: 0; margin-top: 0; }
+.ref-row-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: -4px;
+}
+.ref-row-label {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted);
+}
+.ref-row-label .opt {
+  font-family: var(--serif); font-style: italic;
+  font-weight: 400; letter-spacing: 0.04em;
+  text-transform: none; color: var(--muted-2);
+  margin-left: 6px;
+}
+.ref-remove {
+  background: none; border: none;
+  font-family: var(--sans); font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted);
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+  padding: 4px 6px; border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.ref-remove:hover { color: var(--danger); background: color-mix(in oklch, var(--danger) 8%, transparent); }
+
+.ref-add {
+  background: none;
+  border: 1px dashed color-mix(in oklch, var(--ink) 22%, transparent);
+  color: var(--muted-2);
+  font-family: var(--sans); font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 12px;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.ref-add:hover {
+  color: var(--ink);
+  border-color: color-mix(in oklch, var(--ink) 40%, transparent);
+  background: color-mix(in oklch, var(--ink) 4%, transparent);
+}
+
 /* ============ Footer ============ */
 footer.foot {
   display: grid;
@@ -1159,6 +1258,10 @@ const state = {
     linkedin: '',
     refName: '',
     refRelation: '',
+    refName2: '',
+    refRelation2: '',
+    refName3: '',
+    refRelation3: '',
     why: ''
   }
 };
@@ -1369,23 +1472,68 @@ function stepSocials() {
 }
 
 function stepReferral() {
+  const has2 = !!(state.data.refName2 || state.data.refRelation2);
+  const has3 = !!(state.data.refName3 || state.data.refRelation3);
   return `
     <div class="eyebrow">A friend at the table</div>
     <h2 class="prompt">Who <span class="italic">sent</span> you?</h2>
-    <p class="help">A recommendation from an existing member is by far the most important field in this form. <em>Without one, the room is much harder to enter.</em> If you don't have one yet, leave it blank, but tell us how you found us in the next step.</p>
-    <div class="fields">
-      <div class="field" data-name="refName">
-        <div class="field-body">
-          <label>Member's full name <span class="opt">optional but decisive</span></label>
-          <input id="refName" type="text" placeholder="Camille Lefèvre" />
+    <p class="help">Two references is the norm. Three is rare and counts. <em>Each one adds 10 points to your application.</em></p>
+    <div class="fields" id="refsFields">
+      <div class="ref-row" data-row="1">
+        <div class="field" data-name="refName">
+          <div class="field-body">
+            <label>Member's full name <span class="opt">strongly recommended</span></label>
+            <input id="refName" type="text" placeholder="Camille Lefèvre" />
+          </div>
+        </div>
+        <div class="field" data-name="refRelation">
+          <div class="field-body">
+            <label>How do you know them?</label>
+            <input id="refRelation" type="text" placeholder="Former colleague at… · Friend since 2018…" />
+          </div>
         </div>
       </div>
-      <div class="field" data-name="refRelation">
-        <div class="field-body">
-          <label>How do you know them?</label>
-          <input id="refRelation" type="text" placeholder="Former colleague at… · Friend since 2018…" />
+
+      <div class="ref-row" data-row="2" style="display:${has2 ? 'block' : 'none'}">
+        <div class="ref-row-head">
+          <span class="ref-row-label">Second reference</span>
+          <button type="button" class="ref-remove" data-remove="2">remove</button>
+        </div>
+        <div class="field" data-name="refName2">
+          <div class="field-body">
+            <label>Member's full name</label>
+            <input id="refName2" type="text" placeholder="Antoine Roux" />
+          </div>
+        </div>
+        <div class="field" data-name="refRelation2">
+          <div class="field-body">
+            <label>How do you know them?</label>
+            <input id="refRelation2" type="text" placeholder="Met at a fundraiser…" />
+          </div>
         </div>
       </div>
+
+      <div class="ref-row" data-row="3" style="display:${has3 ? 'block' : 'none'}">
+        <div class="ref-row-head">
+          <span class="ref-row-label">Third reference <span class="opt">rare</span></span>
+          <button type="button" class="ref-remove" data-remove="3">remove</button>
+        </div>
+        <div class="field" data-name="refName3">
+          <div class="field-body">
+            <label>Member's full name</label>
+            <input id="refName3" type="text" placeholder="Léa Dubois" />
+          </div>
+        </div>
+        <div class="field" data-name="refRelation3">
+          <div class="field-body">
+            <label>How do you know them?</label>
+            <input id="refRelation3" type="text" placeholder="Studied together at…" />
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="ref-add" id="refAdd"
+              style="display:${has3 ? 'none' : 'inline-flex'}">+ Add another reference</button>
     </div>
   `;
 }
@@ -1407,13 +1555,50 @@ function stepWhy() {
   `;
 }
 
+function computeStrength(d) {
+  let score = 0;
+  // Referrals — 10 pts each, up to 30
+  if ((d.refName  || '').trim()) score += 10;
+  if ((d.refName2 || '').trim()) score += 10;
+  if ((d.refName3 || '').trim()) score += 10;
+  // LinkedIn — 15 pts
+  if ((d.linkedin || '').trim()) score += 15;
+  // Work (both profession AND employer) — 15 pts
+  if ((d.profession || '').trim() && (d.employer || '').trim()) score += 15;
+  // Why — tiered, max 25 pts
+  const wl = (d.why || '').trim().length;
+  if (wl >= 250) score += 25;
+  else if (wl >= 150) score += 18;
+  else if (wl >= 50) score += 10;
+  // City — 5 pts
+  if ((d.city || '').trim()) score += 5;
+  // DOB complete — 5 pts
+  if (d.dobDay && d.dobMonth && d.dobYear) score += 5;
+  // Instagram — 5 pts
+  if ((d.instagram || '').trim()) score += 5;
+  return Math.max(0, Math.min(100, score));
+}
+
+function strengthLabel(score) {
+  if (score >= 80) return { text: 'Strong. Above the threshold for first-pass review.', tier: 'ok' };
+  if (score >= 60) return { text: 'Above the line for review.', tier: 'ok' };
+  if (score >= 40) return { text: 'Borderline. Consider strengthening before submit.', tier: 'warn' };
+  return { text: 'Weak. Likely to be passed over.', tier: 'danger' };
+}
+
 function stepReview() {
   const d = state.data;
   const phone = d.phone ? `${d.countryCode} ${d.phone}` : '';
   const fullName = [d.firstName, d.lastName].filter(Boolean).join(' ');
   const dob = (d.dobDay && d.dobMonth && d.dobYear) ? `${d.dobDay}/${d.dobMonth}/${d.dobYear}` : '';
   const work = [d.profession, d.employer].filter(Boolean).join(' · ');
-  const referral = d.refName ? (d.refRelation ? `${d.refName} · ${d.refRelation}` : d.refName) : '';
+  const refLine = (n, r) => r ? (n ? `${n} · ${r}` : '') : (n || '');
+  const ref1 = refLine(d.refName,  d.refRelation);
+  const ref2 = refLine(d.refName2, d.refRelation2);
+  const ref3 = refLine(d.refName3, d.refRelation3);
+
+  const score = computeStrength(d);
+  const label = strengthLabel(score);
 
   const rows = [
     { key: 'Name',            val: fullName,     step: 0 },
@@ -1424,11 +1609,22 @@ function stepReview() {
     { key: 'Work',            val: work,         step: 5 },
     { key: 'LinkedIn',        val: d.linkedin,   step: 6 },
     { key: 'Instagram',       val: d.instagram,  step: 6 },
-    { key: 'Referral',        val: referral,     step: 7 },
+    { key: 'Reference 1',     val: ref1,         step: 7 },
+    { key: 'Reference 2',     val: ref2,         step: 7 },
+    { key: 'Reference 3',     val: ref3,         step: 7 },
     { key: 'Why',             val: d.why,        step: 8 }
   ];
 
   return `
+    <div class="strength-block strength-${label.tier}">
+      <div class="strength-head">
+        <span class="strength-eyebrow">Application strength</span>
+        <span class="strength-score"><span class="strength-num" data-target="${score}">0</span><span class="strength-denom">/ 100</span></span>
+      </div>
+      <div class="strength-bar"><div class="strength-bar-fill" data-target="${score}" style="width:0%"></div></div>
+      <p class="strength-label">${label.text}</p>
+    </div>
+
     <div class="eyebrow">Last look</div>
     <h2 class="prompt">A quick <span class="italic">review</span>.</h2>
     <p class="help">Edit anything that's not quite right.</p>
@@ -2038,6 +2234,38 @@ function wireStep(idx) {
     wireCityStep();
   }
 
+  if (key === 'referral') {
+    function showRow(n) {
+      const row = wrap.querySelector(`.ref-row[data-row="${n}"]`);
+      if (row) row.style.display = 'block';
+      const addBtn = wrap.querySelector('#refAdd');
+      if (addBtn) addBtn.style.display = (n >= 3) ? 'none' : 'inline-flex';
+    }
+    function hideRow(n) {
+      const row = wrap.querySelector(`.ref-row[data-row="${n}"]`);
+      if (row) row.style.display = 'none';
+      state.data['refName' + n] = '';
+      state.data['refRelation' + n] = '';
+      const nameInp = row && row.querySelector(`#refName${n}`);
+      const relInp = row && row.querySelector(`#refRelation${n}`);
+      if (nameInp) nameInp.value = '';
+      if (relInp) relInp.value = '';
+      // If row 2 hidden, also hide row 3
+      if (n === 2) hideRow(3);
+      const addBtn = wrap.querySelector('#refAdd');
+      const r3visible = wrap.querySelector('.ref-row[data-row="3"]').style.display !== 'none';
+      if (addBtn) addBtn.style.display = r3visible ? 'none' : 'inline-flex';
+    }
+    const addBtn = wrap.querySelector('#refAdd');
+    if (addBtn) addBtn.addEventListener('click', () => {
+      const r2visible = wrap.querySelector('.ref-row[data-row="2"]').style.display !== 'none';
+      showRow(r2visible ? 3 : 2);
+    });
+    wrap.querySelectorAll('.ref-remove').forEach(btn => {
+      btn.addEventListener('click', () => hideRow(parseInt(btn.dataset.remove, 10)));
+    });
+  }
+
   if (key === 'review' || key === 'inv_review') {
     wrap.querySelectorAll('.edit').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2045,6 +2273,25 @@ function wireStep(idx) {
         render();
       });
     });
+
+    // Animate the strength bar + counter on review only
+    if (key === 'review') {
+      const numEl = wrap.querySelector('.strength-num');
+      const barEl = wrap.querySelector('.strength-bar-fill');
+      if (numEl && barEl) {
+        const target = parseInt(numEl.dataset.target, 10) || 0;
+        const start = performance.now();
+        const dur = 800;
+        (function tick(now) {
+          const t = Math.min((now - start) / dur, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const cur = Math.round(eased * target);
+          numEl.textContent = cur;
+          barEl.style.width = (eased * target) + '%';
+          if (t < 1) requestAnimationFrame(tick);
+        })(start);
+      }
+    }
   }
 
   /* ---------- Onboarding: choice cards ---------- */

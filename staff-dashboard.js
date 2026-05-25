@@ -199,7 +199,8 @@
       const q = state.appQuery;
       rows = rows.filter(a => {
         const d = a.data;
-        return [d.firstName, d.lastName, d.email, d.city, d.profession, d.employer, d.linkedin, d.refName, d.why]
+        return [d.firstName, d.lastName, d.email, d.city, d.profession, d.employer, d.linkedin,
+                d.refName, d.refName2, d.refName3, d.why]
           .join(' ').toLowerCase().includes(q);
       });
     }
@@ -231,9 +232,12 @@
           ${rows.map(a => {
             const isNew = (now - new Date(a.appliedAt).getTime()) < 7 * 86400000;
             const d = a.data;
+            const refCount = [d.refName, d.refName2, d.refName3].filter(n => (n || '').trim()).length;
             const refCell = inviterNames[a.id]
               ? `<span style="color:var(--ok)">Referred by ${escape(inviterNames[a.id])}</span>`
-              : (d.refName ? escape(d.refName) : '<span style="opacity:0.45">none</span>');
+              : (refCount > 0
+                  ? `${escape(d.refName)}${refCount > 1 ? ` <span style="opacity:0.55">+${refCount - 1}</span>` : ''}`
+                  : '<span style="opacity:0.45">none</span>');
             return `
               <tr data-id="${a.id}" class="${isNew ? 'is-new' : ''}">
                 <td class="date">${formatDate(a.appliedAt)}</td>
@@ -660,8 +664,16 @@
       const inviterName = inviter ? `${inviter.data.firstName} ${inviter.data.lastName}` : 'a member';
       referralHtml = `<span style="color:var(--ok)">Referred by ${escape(inviterName)}</span>`;
     } else {
-      referralHtml = d.refName
-        ? `${escape(d.refName)}${d.refRelation ? ' · ' + escape(d.refRelation) : ''}`
+      const fmtRef = (n, r) => n
+        ? `${escape(n)}${r ? ' · ' + escape(r) : ''}`
+        : null;
+      const refs = [
+        fmtRef(d.refName,  d.refRelation),
+        fmtRef(d.refName2, d.refRelation2),
+        fmtRef(d.refName3, d.refRelation3)
+      ].filter(Boolean);
+      referralHtml = refs.length
+        ? refs.map(r => `<div>${r}</div>`).join('')
         : '<span style="opacity:0.45">none</span>';
     }
 

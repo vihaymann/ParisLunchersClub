@@ -44,6 +44,10 @@
         instagram: row.instagram,
         refName: row.ref_name,
         refRelation: row.ref_relation,
+        refName2: row.ref_name_2,
+        refRelation2: row.ref_relation_2,
+        refName3: row.ref_name_3,
+        refRelation3: row.ref_relation_3,
         why: row.why
       }
     };
@@ -121,6 +125,10 @@
         instagram: record.data.instagram || '',
         ref_name: record.data.refName || '',
         ref_relation: record.data.refRelation || '',
+        ref_name_2: record.data.refName2 || '',
+        ref_relation_2: record.data.refRelation2 || '',
+        ref_name_3: record.data.refName3 || '',
+        ref_relation_3: record.data.refRelation3 || '',
         why: record.data.why || '',
         status: 'pending'
       };
@@ -388,31 +396,31 @@
     }
   };
 
-  /* ---------- Submit (called by Apply.html via RPC) ---------- */
+  /* ---------- Submit (RPC, SECURITY DEFINER — bypasses RLS) ---------- */
   async function submitApplication(formData) {
-    const { data, error } = await sb.from('applications')
-      .insert({
-        first_name: formData.firstName || '',
-        last_name: formData.lastName || '',
-        email: formData.email || '',
-        country_code: formData.countryCode || '+33',
-        phone: formData.phone || '',
-        dob_day: formData.dobDay || '',
-        dob_month: formData.dobMonth || '',
-        dob_year: formData.dobYear || '',
-        city: formData.city || '',
-        city_is_other: !!formData.cityIsOther,
-        profession: formData.profession || '',
-        employer: formData.employer || '',
-        linkedin: formData.linkedin || '',
-        instagram: formData.instagram || '',
-        ref_name: formData.refName || '',
-        ref_relation: formData.refRelation || '',
-        why: formData.why || '',
-        status: 'pending'
-      })
-      .select()
-      .single();
+    const { data, error } = await sb.rpc('submit_application', {
+      p_first_name:     formData.firstName || '',
+      p_last_name:      formData.lastName || '',
+      p_email:          formData.email || '',
+      p_country_code:   formData.countryCode || '+33',
+      p_phone:          formData.phone || '',
+      p_dob_day:        formData.dobDay || '',
+      p_dob_month:      formData.dobMonth || '',
+      p_dob_year:       formData.dobYear || '',
+      p_city:           formData.city || '',
+      p_city_is_other:  !!formData.cityIsOther,
+      p_profession:     formData.profession || '',
+      p_employer:       formData.employer || '',
+      p_linkedin:       formData.linkedin || '',
+      p_instagram:      formData.instagram || '',
+      p_ref_name:       formData.refName || '',
+      p_ref_relation:   formData.refRelation || '',
+      p_ref_name_2:     formData.refName2 || '',
+      p_ref_relation_2: formData.refRelation2 || '',
+      p_ref_name_3:     formData.refName3 || '',
+      p_ref_relation_3: formData.refRelation3 || '',
+      p_why:            formData.why || ''
+    });
     if (error) throw error;
     return {
       id: data.id,

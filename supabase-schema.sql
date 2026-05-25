@@ -26,8 +26,12 @@ create table applications (
   employer     text not null default '',
   linkedin     text not null default '',
   instagram    text not null default '',
-  ref_name     text not null default '',
-  ref_relation text not null default '',
+  ref_name        text not null default '',
+  ref_relation    text not null default '',
+  ref_name_2      text default '',
+  ref_relation_2  text default '',
+  ref_name_3      text default '',
+  ref_relation_3  text default '',
   why          text not null default '',
 
   created_at   timestamptz not null default now(),
@@ -145,6 +149,10 @@ create or replace function public.submit_application(
   p_instagram text default '',
   p_ref_name text default '',
   p_ref_relation text default '',
+  p_ref_name_2 text default '',
+  p_ref_relation_2 text default '',
+  p_ref_name_3 text default '',
+  p_ref_relation_3 text default '',
   p_why text default ''
 ) returns json as $$
 declare
@@ -154,12 +162,14 @@ begin
     status, first_name, last_name, email, country_code, phone,
     dob_day, dob_month, dob_year, city, city_is_other,
     profession, employer, linkedin, instagram,
-    ref_name, ref_relation, why
+    ref_name, ref_relation, ref_name_2, ref_relation_2, ref_name_3, ref_relation_3,
+    why
   ) values (
     'pending', p_first_name, p_last_name, p_email, p_country_code, p_phone,
     p_dob_day, p_dob_month, p_dob_year, p_city, p_city_is_other,
     p_profession, p_employer, p_linkedin, p_instagram,
-    p_ref_name, p_ref_relation, p_why
+    p_ref_name, p_ref_relation, p_ref_name_2, p_ref_relation_2, p_ref_name_3, p_ref_relation_3,
+    p_why
   ) returning * into new_row;
 
   return json_build_object(
