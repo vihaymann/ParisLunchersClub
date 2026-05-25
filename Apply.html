@@ -1111,8 +1111,8 @@ const state = {
     tempPassword: _prefillPwd,
     memberId: null,
     firstName: '',
-    seeking: '',
-    connectionStyle: '',
+    seeking: [],
+    connectionStyle: [],
     interests: [],
     tableStyle: '',
     jobPassion: '',
@@ -1455,51 +1455,31 @@ function obLogin() {
 }
 
 function obSeeking() {
-  const d = state.data;
+  const sel = state.data.seeking || [];
   return `
     <div class="eyebrow">Ta premiere question</div>
     <h2 class="prompt">Qu'est-ce que tu cherches <span class="italic">a table</span> ?</h2>
-    <p class="help">On te place avec une seule personne. Dis-nous ce qui compte.</p>
-    <div class="choices" data-name="seeking" data-mode="single">
-      <button type="button" class="choice${d.seeking === 'friend' ? ' selected' : ''}" data-value="friend">
-        <span class="indicator"></span>
-        <span>Un futur ami</span>
-      </button>
-      <button type="button" class="choice${d.seeking === 'professional' ? ' selected' : ''}" data-value="professional">
-        <span class="indicator"></span>
-        <span>Un contact pro qui fait sens</span>
-      </button>
-      <button type="button" class="choice${d.seeking === 'surprise' ? ' selected' : ''}" data-value="surprise">
-        <span class="indicator"></span>
-        <span>Une surprise, je ne sais pas encore</span>
-      </button>
+    <p class="help">On te place avec une seule personne. Dis-nous ce qui compte. Plusieurs reponses possibles.</p>
+    <div class="chips" data-name="seeking" data-mode="multi" data-max="4">
+      <button type="button" class="chip${sel.includes('friend') ? ' selected' : ''}" data-value="friend">Rencontrer un futur ami</button>
+      <button type="button" class="chip${sel.includes('professional') ? ' selected' : ''}" data-value="professional">Creer un lien pro qui fait sens</button>
+      <button type="button" class="chip${sel.includes('partner') ? ' selected' : ''}" data-value="partner">Trouver l'ame soeur</button>
+      <button type="button" class="chip${sel.includes('surprise') ? ' selected' : ''}" data-value="surprise">Me laisser surprendre</button>
     </div>
   `;
 }
 
 function obConnection() {
-  const d = state.data;
+  const sel = state.data.connectionStyle || [];
   return `
     <div class="eyebrow">Ton style</div>
     <h2 class="prompt">Un bon dejeuner avec un <span class="italic">inconnu</span>, ca ressemble a quoi ?</h2>
-    <p class="help">Il n'y a pas de mauvaise reponse.</p>
-    <div class="choices" data-name="connectionStyle" data-mode="single">
-      <button type="button" class="choice${d.connectionStyle === 'mutual_friends' ? ' selected' : ''}" data-value="mutual_friends">
-        <span class="indicator"></span>
-        <span>On a decouvert qu'on connait les memes gens</span>
-      </button>
-      <button type="button" class="choice${d.connectionStyle === 'work_click' ? ' selected' : ''}" data-value="work_click">
-        <span class="indicator"></span>
-        <span>On a parle de nos metiers et ca a clique</span>
-      </button>
-      <button type="button" class="choice${d.connectionStyle === 'debate' ? ' selected' : ''}" data-value="debate">
-        <span class="indicator"></span>
-        <span>On a debattu sans etre d'accord</span>
-      </button>
-      <button type="button" class="choice${d.connectionStyle === 'laughter' ? ' selected' : ''}" data-value="laughter">
-        <span class="indicator"></span>
-        <span>On a ri sans raison et on s'est revu la semaine d'apres</span>
-      </button>
+    <p class="help">Il n'y a pas de mauvaise reponse. Plusieurs reponses possibles.</p>
+    <div class="chips" data-name="connectionStyle" data-mode="multi" data-max="4">
+      <button type="button" class="chip${sel.includes('mutual_friends') ? ' selected' : ''}" data-value="mutual_friends">On connait les memes gens</button>
+      <button type="button" class="chip${sel.includes('work_click') ? ' selected' : ''}" data-value="work_click">On a parle boulot et ca a clique</button>
+      <button type="button" class="chip${sel.includes('debate') ? ' selected' : ''}" data-value="debate">On a debattu sans etre d'accord</button>
+      <button type="button" class="chip${sel.includes('laughter') ? ' selected' : ''}" data-value="laughter">On a ri et on s'est revu la semaine d'apres</button>
     </div>
   `;
 }
@@ -1515,11 +1495,11 @@ function obInterests() {
   return `
     <div class="eyebrow">Tes centres d'interet</div>
     <h2 class="prompt">En dehors du boulot, qu'est-ce qui te fait parler pendant <span class="italic">une heure</span> ?</h2>
-    <p class="help">Trois maximum. Choisis ceux qui reviennent vraiment.</p>
-    <div class="chips" data-name="interests" data-mode="multi" data-max="3">
+    <p class="help">Cinq maximum. Choisis ceux qui reviennent vraiment.</p>
+    <div class="chips" data-name="interests" data-mode="multi" data-max="5">
       ${tags.map(t => `<button type="button" class="chip${sel.includes(t) ? ' selected' : ''}" data-value="${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}
     </div>
-    <div class="chips-hint"><span id="chipsCount">${sel.length}</span> / 3 selectionnes</div>
+    <div class="chips-hint"><span id="chipsCount">${sel.length}</span> / 5 selectionnes</div>
   `;
 }
 
@@ -2074,9 +2054,9 @@ function isStepValid(idx) {
     case 'review':   return true;
     /* Onboarding validation */
     case 'ob_login':      return d.refCode.trim().length >= 4 && d.tempPassword.trim().length >= 4;
-    case 'ob_seeking':    return !!d.seeking;
-    case 'ob_connection': return !!d.connectionStyle;
-    case 'ob_interests':  return (d.interests || []).length >= 1 && (d.interests || []).length <= 3;
+    case 'ob_seeking':    return (d.seeking || []).length >= 1;
+    case 'ob_connection': return (d.connectionStyle || []).length >= 1;
+    case 'ob_interests':  return (d.interests || []).length >= 1 && (d.interests || []).length <= 5;
     case 'ob_table':      return !!d.tableStyle;
     case 'ob_passion':    return (d.jobPassion || '').trim().length >= 10;
     case 'ob_opento':     return (d.openTo || []).length >= 1;

@@ -41,10 +41,10 @@ CREATE TABLE onboarding_profiles (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   member_id    UUID NOT NULL REFERENCES applications(id) UNIQUE,
 
-  -- Q1: seeking
-  seeking          TEXT NOT NULL CHECK (seeking IN ('friend','professional','surprise')),
-  -- Q2: connection style
-  connection_style TEXT NOT NULL CHECK (connection_style IN ('mutual_friends','work_click','debate','laughter')),
+  -- Q1: seeking (multi-select)
+  seeking          TEXT[] NOT NULL DEFAULT '{}',
+  -- Q2: connection style (multi-select)
+  connection_style TEXT[] NOT NULL DEFAULT '{}',
   -- Q3: interests (multi-select tags)
   interests        TEXT[] NOT NULL DEFAULT '{}',
   -- Q4: table personality
@@ -107,8 +107,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION save_onboarding(
   p_ref_code TEXT,
   p_temp_password TEXT,
-  p_seeking TEXT,
-  p_connection_style TEXT,
+  p_seeking TEXT[],
+  p_connection_style TEXT[],
   p_interests TEXT[],
   p_table_style TEXT,
   p_job_passion TEXT,
