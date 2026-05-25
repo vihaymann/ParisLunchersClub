@@ -158,10 +158,7 @@ body {
   padding: 0;
 }
 #homePage .greeting {
-  background: radial-gradient(ellipse at 20% 0%, color-mix(in oklch, var(--accent) 6%, transparent) 0%, transparent 70%);
-  padding: 24px 24px 20px;
-  border-radius: 16px;
-  margin: -24px -24px 0;
+  padding: 0;
 }
 .greeting h1 {
   font-family: var(--display);
@@ -244,15 +241,15 @@ body {
 }
 .stat-card {
   background: var(--field);
-  border: 1px solid color-mix(in oklch, var(--accent) 18%, var(--line));
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 20px;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px color-mix(in oklch, var(--accent) 6%, transparent);
-  border-color: color-mix(in oklch, var(--accent) 30%, var(--line));
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--ink) 4%, transparent);
+  border-color: color-mix(in oklch, var(--ink) 18%, var(--line));
 }
 .stat-card .number {
   font-family: var(--display);
@@ -274,7 +271,7 @@ body {
 .section { margin-top: 36px; }
 .section-head {
   padding-bottom: 10px;
-  border-bottom: 1px solid color-mix(in oklch, var(--accent) 12%, var(--line));
+  border-bottom: 1px solid var(--line);
   margin-bottom: 16px;
 }
 .profile-section { margin-top: 32px; }
@@ -291,7 +288,7 @@ body {
 .empty-card .muted { margin-top: 4px; }
 .empty-card.placeholder {
   border-style: dashed;
-  border-color: color-mix(in oklch, var(--accent) 25%, var(--line));
+  border-color: color-mix(in oklch, var(--ink) 18%, var(--line));
   text-align: center;
   padding: 32px 24px;
 }
@@ -317,8 +314,8 @@ body {
 }
 .connection-card:hover {
   transform: translateX(2px);
-  border-left-color: var(--accent);
-  background: color-mix(in oklch, var(--accent) 2%, transparent);
+  border-left-color: var(--ink);
+  background: color-mix(in oklch, var(--ink) 2%, transparent);
 }
 .connection-card:last-child { border-bottom: none; }
 .avatar {
@@ -352,12 +349,12 @@ body {
 
 /* ============ Week grid ============ */
 .week-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
   margin-top: 24px;
 }
 .day-card {
   display: flex; flex-direction: column; align-items: center;
-  padding: 14px 0 10px;
+  padding: 18px 0 14px;
   background: var(--field);
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -367,26 +364,23 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .day-card:not([disabled]):not(.selected):hover {
-  border-color: color-mix(in oklch, var(--accent) 30%, var(--line));
-  background: color-mix(in oklch, var(--accent) 4%, var(--field));
+  border-color: color-mix(in oklch, var(--ink) 30%, var(--line));
+  background: color-mix(in oklch, var(--ink) 3%, var(--field));
 }
 .day-card.selected {
   border-color: var(--ok);
   background: color-mix(in oklch, var(--ok) 8%, var(--field));
 }
-.day-card.weekend {
-  opacity: 0.3;
-  cursor: default !important;
-}
 .day-name {
-  font-size: 9px; font-weight: 500;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--muted);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink);
 }
 .day-num {
   font-family: var(--display);
-  font-size: 20px; font-weight: 500;
-  margin-top: 4px;
+  font-size: 22px; font-weight: 500;
+  margin-top: 6px;
+  color: var(--ink);
 }
 .day-check {
   font-size: 12px; color: var(--ok);
@@ -403,7 +397,7 @@ body {
 }
 .month-counter span {
   font-family: var(--display);
-  font-weight: 600; color: var(--accent);
+  font-weight: 600; color: var(--ink);
 }
 
 /* ============ Map ============ */
@@ -445,19 +439,17 @@ body {
 }
 .radius-btn:hover { border-color: var(--muted); color: var(--ink); }
 .radius-btn.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: color-mix(in oklch, var(--accent) 8%, var(--field));
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px color-mix(in oklch, var(--accent) 10%, transparent);
+  border-color: var(--ink);
+  color: var(--ink);
+  background: color-mix(in oklch, var(--ink) 5%, var(--field));
 }
 .rec-label {
   display: block;
   font-size: 8px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--muted);
   margin-top: 2px;
-  opacity: 0.7;
 }
 
 /* ============ Profile rows ============ */

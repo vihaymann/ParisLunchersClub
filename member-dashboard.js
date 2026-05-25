@@ -121,13 +121,16 @@
       const railWho = document.getElementById('railWho');
       if (railWho) railWho.textContent = m.firstName;
 
-      // Build next 7 days
+      // Build next 5 weekdays (Mon-Fri only)
       const days = [];
       const today = new Date();
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() + i);
-        days.push(d);
+      let cursor = new Date(today);
+      while (days.length < 5) {
+        const dow = cursor.getDay();
+        if (dow !== 0 && dow !== 6) {
+          days.push(new Date(cursor));
+        }
+        cursor.setDate(cursor.getDate() + 1);
       }
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -160,17 +163,15 @@
 
         <div class="section slide-up" style="--delay:200ms">
           <div class="section-head">
-            <div class="eyebrow">Your week</div>
+            <div class="eyebrow">Select when you're free</div>
           </div>
           <p class="help" style="margin-top:-8px;margin-bottom:8px;">Pick your days. We'll arrange a one-on-one lunch for you.</p>
           <div class="week-grid" id="weekGrid">
             ${days.map(d => {
               const iso = d.toISOString().slice(0, 10);
               const isSelected = selectedDates.includes(iso);
-              const isWeekend = d.getDay() === 0 || d.getDay() === 6;
               return `
-                <button class="day-card${isSelected ? ' selected' : ''}${isWeekend ? ' weekend' : ''}"
-                        data-date="${iso}" ${isWeekend ? 'disabled' : ''}>
+                <button class="day-card${isSelected ? ' selected' : ''}" data-date="${iso}">
                   <span class="day-name">${dayNames[d.getDay()]}</span>
                   <span class="day-num">${d.getDate()}</span>
                   <span class="day-check">${isSelected ? '&#10003;' : ''}</span>
@@ -200,7 +201,7 @@
             <div class="eyebrow">Next lunch</div>
           </div>
           <div class="empty-card placeholder">
-            <svg class="empty-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="empty-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted-2)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
             </svg>
             <p>Your next lunch is being arranged.</p>
@@ -346,9 +347,9 @@
 
     radiusCircle = L.circle([lat, lng], {
       radius: radius * 1000,
-      color: '#C9A37A',
-      fillColor: '#C9A37A',
-      fillOpacity: 0.12,
+      color: '#F4F1EA',
+      fillColor: '#F4F1EA',
+      fillOpacity: 0.08,
       weight: 1.5
     }).addTo(map);
 
