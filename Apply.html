@@ -2193,6 +2193,9 @@ async function submitOnboarding() {
     console.error('Onboarding save failed:', e);
   }
 
+  // Store member session for dashboard access
+  window.TPLC.memberSession.store(state.data.refCode, state.data.tempPassword, state.data.memberId, state.data.firstName);
+
   const name = state.data.firstName ? escapeHtml(state.data.firstName) : '';
   wrap.innerHTML = `
     <div class="step active done">
@@ -2200,7 +2203,7 @@ async function submitOnboarding() {
       <h2>${name}, bienvenue <span class="italic">au club</span>.</h2>
       <p>Ton profil est enregistre. On te contacte tres vite pour organiser ton premier dejeuner.</p>
       <p>Un tete-a-tete, dans un bon restaurant, avec quelqu'un qu'on a choisi pour toi.</p>
-      <div class="next-step">A bientot a table.</div>
+      <a href="Member.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;margin-top:24px;text-decoration:none;">Mon espace <span>&rarr;</span></a>
     </div>
   `;
   document.getElementById('stepNav').style.display = 'none';

@@ -460,6 +460,78 @@
     }
   };
 
+  /* ---------- Member session (localStorage) ---------- */
+  const memberSession = {
+    store(refCode, password, memberId, firstName) {
+      localStorage.setItem('tplc_member', JSON.stringify({ refCode, password, memberId, firstName }));
+    },
+    get() {
+      try { return JSON.parse(localStorage.getItem('tplc_member')); } catch { return null; }
+    },
+    clear() {
+      localStorage.removeItem('tplc_member');
+    }
+  };
+
+  /* ---------- Member dashboard API ---------- */
+  const member = {
+    async dashboard() {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('get_member_dashboard', {
+        p_ref_code: s.refCode, p_password: s.password
+      });
+      if (error) throw error;
+      return data;
+    },
+    async connections() {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('get_member_connections', {
+        p_ref_code: s.refCode, p_password: s.password
+      });
+      if (error) throw error;
+      return data;
+    },
+    async getAvailability() {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('get_member_availability', {
+        p_ref_code: s.refCode, p_password: s.password
+      });
+      if (error) throw error;
+      return data;
+    },
+    async toggleAvailability(date) {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('toggle_member_availability', {
+        p_ref_code: s.refCode, p_password: s.password, p_date: date
+      });
+      if (error) throw error;
+      return data;
+    },
+    async getPreferences() {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('get_member_preferences', {
+        p_ref_code: s.refCode, p_password: s.password
+      });
+      if (error) throw error;
+      return data;
+    },
+    async setPreferences(radius, lat, lng) {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('set_member_preferences', {
+        p_ref_code: s.refCode, p_password: s.password,
+        p_radius: radius, p_lat: lat, p_lng: lng
+      });
+      if (error) throw error;
+      return data;
+    }
+  };
+
   /* ---------- Public surface ---------- */
   window.TPLC = {
     applications,
@@ -470,6 +542,8 @@
     session,
     submitApplication,
     onboarding,
+    memberSession,
+    member,
     resetAll() {}
   };
 })();

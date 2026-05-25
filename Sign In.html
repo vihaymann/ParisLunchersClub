@@ -775,15 +775,21 @@
 
         if (res.ok) {
           set('granted', 'Welcome, ' + res.first_name);
-          // If not yet onboarded, send to onboarding flow
+          // Store member session
+          window.TPLC.memberSession.store(refCode, password, res.member_id, res.first_name);
           setTimeout(() => {
-            window.location.href = 'Apply.html?mode=onboard&ref=' + encodeURIComponent(refCode) + '&pwd=' + encodeURIComponent(password);
+            if (res.onboarded) {
+              // Already onboarded: go to member dashboard
+              window.location.href = 'Member.html';
+            } else {
+              // Not yet onboarded: go to onboarding flow
+              window.location.href = 'Apply.html?mode=onboard&ref=' + encodeURIComponent(refCode) + '&pwd=' + encodeURIComponent(password);
+            }
           }, 900);
         } else {
           const msg = {
             not_found: 'We don\'t recognise this code',
-            invalid_password: 'Wrong password',
-            already_onboarded: 'Already onboarded. Welcome back!'
+            invalid_password: 'Wrong password'
           }[res.error] || 'We don\'t recognise you';
           set('denied', msg);
           if (res.error === 'not_found') fM.classList.add('error');
