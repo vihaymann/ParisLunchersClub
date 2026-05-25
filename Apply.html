@@ -1068,8 +1068,11 @@ footer.foot {
 /* ============ Apply / Onboarding | Raya-style flow ============ */
 
 /* ---------- Mode detection ---------- */
-const MODE = new URLSearchParams(window.location.search).get('mode');
+const _params = new URLSearchParams(window.location.search);
+const MODE = _params.get('mode');
 const isOnboarding = MODE === 'onboard';
+const _prefillRef = _params.get('ref') || '';
+const _prefillPwd = _params.get('pwd') || '';
 
 /* ============ Step definitions ============ */
 
@@ -1104,8 +1107,8 @@ const STEPS = isOnboarding ? OB_STEPS : APP_STEPS;
 const state = {
   step: 0,
   data: isOnboarding ? {
-    refCode: '',
-    tempPassword: '',
+    refCode: _prefillRef,
+    tempPassword: _prefillPwd,
     memberId: null,
     firstName: '',
     seeking: '',
@@ -2244,8 +2247,26 @@ if (isOnboarding) {
   document.querySelector('.bar .left a').href = 'The Paris Lunchers Club.html';
   const rightLink = document.querySelector('.bar .right a');
   if (rightLink) rightLink.style.display = 'none';
+
+  // Auto-verify if credentials came from Sign In page
+  if (_prefillRef && _prefillPwd) {
+    (async () => {
+      try {
+        const res = await window.TPLC.onboarding.verify(_prefillRef, _prefillPwd);
+        if (res.ok) {
+          state.data.memberId = res.member_id;
+          state.data.firstName = res.first_name;
+          state.step = 1; // skip login, go to first question
+        }
+      } catch (e) { /* fall through to login step */ }
+      render();
+    })();
+  } else {
+    render();
+  }
+} else {
+  render();
 }
-render();
 
 </script>
 </body>

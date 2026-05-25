@@ -10,6 +10,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="db.js"></script>
+
 <style>
   :root {
     --bg: #0A0A09;
@@ -746,22 +749,50 @@
       }
     }
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (btn.dataset.state !== 'idle') return;
+
+      const refCode = document.getElementById('memberNum').value.trim();
+      const password = document.getElementById('passphrase').value.trim();
+
+      if (!refCode || !password) {
+        if (!refCode) fM.classList.add('error');
+        if (!password) fP.classList.add('error');
+        return;
+      }
+
       set('loading', 'Verifying');
-      setTimeout(() => set('loading', 'Cross-referencing the room'), 1200);
-      setTimeout(() => {
-        // always deny
-        set('denied', 'We don\u2019t recognise you');
-        fM.classList.add('error');
-        fP.classList.add('error');
-        setTimeout(() => {
-          set('idle', 'Try again');
-          fM.classList.remove('error');
-          fP.classList.remove('error');
-        }, 2400);
-      }, 2600);
+
+      try {
+        const res = await window.TPLC.onboarding.verify(refCode, password);
+
+        if (res.ok) {
+          set('granted', 'Welcome, ' + res.first_name);
+          // If not yet onboarded, send to onboarding flow
+          setTimeout(() => {
+            window.location.href = 'Apply.html?mode=onboard&ref=' + encodeURIComponent(refCode) + '&pwd=' + encodeURIComponent(password);
+          }, 900);
+        } else {
+          const msg = {
+            not_found: 'We don\'t recognise this code',
+            invalid_password: 'Wrong password',
+            already_onboarded: 'Already onboarded. Welcome back!'
+          }[res.error] || 'We don\'t recognise you';
+          set('denied', msg);
+          if (res.error === 'not_found') fM.classList.add('error');
+          if (res.error === 'invalid_password') fP.classList.add('error');
+          setTimeout(() => {
+            set('idle', 'Try again');
+            fM.classList.remove('error');
+            fP.classList.remove('error');
+          }, 2400);
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        set('denied', 'Something went wrong');
+        setTimeout(() => set('idle', 'Try again'), 2400);
+      }
     });
   })();
 
