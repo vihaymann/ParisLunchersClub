@@ -32,10 +32,9 @@
 
   function setPage(name) {
     state.page = name;
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.page === name));
+    document.querySelectorAll('.rail-item').forEach(t => t.classList.toggle('active', t.dataset.page === name));
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === name));
     if (name === 'home') renderHome();
-    if (name === 'week') renderWeek();
     if (name === 'carnet') renderCarnet();
     if (name === 'profil') renderProfil();
   }
@@ -58,20 +57,47 @@
   }
 
   /* ============================================================
-     HOME PAGE
+     HOME PAGE (stats + availability + map + connections)
      ============================================================ */
   async function renderHome() {
     const container = document.getElementById('homePage');
     try {
-      const res = await db.member.dashboard();
-      if (!res.ok) { db.memberSession.clear(); window.location.href = 'Sign In.html'; return; }
-      dashData = res;
+      // Fetch dashboard data and availability in parallel
+      const [dashRes, availRes] = await Promise.all([
+        db.member.dashboard(),
+        db.member.getAvailability().catch(() => ({ ok: false }))
+      ]);
 
-      const m = res.member;
-      const s = res.stats;
+      if (!dashRes.ok) { db.memberSession.clear(); window.location.href = 'Sign In.html'; return; }
+      dashData = dashRes;
+
+      const m = dashRes.member;
+      const s = dashRes.stats;
       const remaining = Math.max(0, s.monthLimit - s.monthLunches);
       const hour = new Date().getHours();
       const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
+      // Update sidebar name
+      const railWho = document.getElementById('railWho');
+      if (railWho) railWho.textContent = m.firstName;
+
+      // Build next 7 days
+      const days = [];
+      const today = new Date();
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        days.push(d);
+      }
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      let selectedDates = [];
+      let monthCount = 0;
+      if (availRes.ok) {
+        selectedDates = (availRes.dates || []).map(d => d);
+        const thisMonth = today.toISOString().slice(0, 7);
+        monthCount = selectedDates.filter(d => d.startsWith(thisMonth)).length;
+      }
 
       container.innerHTML = `
         <div class="greeting fade-in">
@@ -90,30 +116,55 @@
           </div>
         </div>
 
-        <div class="stat-cards fade-in" style="animation-delay:120ms">
-          <div class="stat-card subtle">
-            <div class="number">${s.lunchesAttended}</div>
-            <div class="label">Total lunches</div>
+        <div class="section fade-in" style="animation-delay:160ms">
+          <div class="section-head">
+            <div class="eyebrow">Your week</div>
           </div>
-          <div class="stat-card subtle">
-            <div class="number">${s.monthLunches}</div>
-            <div class="label">This month</div>
+          <p class="help" style="margin-top:-8px;margin-bottom:8px;">Pick your days. We'll arrange a one-on-one lunch for you.</p>
+          <div class="week-grid" id="weekGrid">
+            ${days.map(d => {
+              const iso = d.toISOString().slice(0, 10);
+              const isSelected = selectedDates.includes(iso);
+              const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+              return `
+                <button class="day-card${isSelected ? ' selected' : ''}${isWeekend ? ' weekend' : ''}"
+                        data-date="${iso}" ${isWeekend ? 'disabled' : ''}>
+                  <span class="day-name">${dayNames[d.getDay()]}</span>
+                  <span class="day-num">${d.getDate()}</span>
+                  <span class="day-check">${isSelected ? '&#10003;' : ''}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+          <div class="month-counter" id="monthCounter">
+            <span id="monthCount">${monthCount}</span> / 4 lunches this month
           </div>
         </div>
 
-        <div class="section fade-in" style="animation-delay:200ms">
+        <div class="section fade-in" style="animation-delay:240ms">
+          <div class="section-head">
+            <div class="eyebrow">Where to lunch?</div>
+          </div>
+          <div class="map-wrap" id="mapWrap"></div>
+          <div class="radius-selector" id="radiusSelector">
+            <button class="radius-btn" data-r="1">1 km</button>
+            <button class="radius-btn" data-r="3">3 km<span class="rec-label">Recommended</span></button>
+            <button class="radius-btn" data-r="5">5 km<span class="rec-label">Recommended</span></button>
+          </div>
+        </div>
+
+        <div class="section fade-in" style="animation-delay:320ms">
           <div class="section-head">
             <div class="eyebrow">Next lunch</div>
           </div>
           <div class="empty-card">
             <p>No lunch scheduled yet.</p>
-            <p class="muted">Set your availability and we'll take care of the rest.</p>
-            <button class="btn-action" id="goWeekBtn">My week <span class="arrow">&rarr;</span></button>
+            <p class="muted">Set your availability above and we'll take care of the rest.</p>
           </div>
         </div>
 
         ${s.peopleMet > 0 ? `
-        <div class="section fade-in" style="animation-delay:280ms">
+        <div class="section fade-in" style="animation-delay:400ms">
           <div class="section-head">
             <div class="eyebrow">Recent connections</div>
           </div>
@@ -121,9 +172,11 @@
         </div>` : ''}
       `;
 
-      document.getElementById('goWeekBtn')?.addEventListener('click', () => setPage('week'));
+      // Wire availability and map
+      wireWeek(selectedDates, monthCount);
+      initMap();
 
-      // Load recent connections for home page
+      // Load recent connections
       if (s.peopleMet > 0) {
         const conRes = await db.member.connections();
         if (conRes.ok && conRes.connections?.length) {
@@ -151,81 +204,11 @@
   }
 
   /* ============================================================
-     WEEK PAGE (Availability + Map)
+     WEEK AVAILABILITY — wiring
      ============================================================ */
-  async function renderWeek() {
-    const container = document.getElementById('weekPage');
-
-    // Build next 7 days
-    const days = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      days.push(d);
-    }
-
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    // Get current availability
-    let selectedDates = [];
-    let monthCount = 0;
-    try {
-      const avail = await db.member.getAvailability();
-      if (avail.ok) {
-        selectedDates = (avail.dates || []).map(d => d);
-        // Count this month's selections
-        const thisMonth = today.toISOString().slice(0, 7);
-        monthCount = selectedDates.filter(d => d.startsWith(thisMonth)).length;
-      }
-    } catch (err) { console.error('Availability load error:', err); }
-
-    container.innerHTML = `
-      <div class="greeting fade-in">
-        <div class="eyebrow">Availability</div>
-        <h1>When are you <span class="italic">free</span>?</h1>
-        <p class="help">Pick your days. We'll arrange a one-on-one lunch for you.</p>
-      </div>
-
-      <div class="week-grid fade-in" style="animation-delay:80ms" id="weekGrid">
-        ${days.map(d => {
-          const iso = d.toISOString().slice(0, 10);
-          const isSelected = selectedDates.includes(iso);
-          const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-          return `
-            <button class="day-card${isSelected ? ' selected' : ''}${isWeekend ? ' weekend' : ''}"
-                    data-date="${iso}" ${isWeekend ? 'disabled' : ''}>
-              <span class="day-name">${dayNames[d.getDay()]}</span>
-              <span class="day-num">${d.getDate()}</span>
-              <span class="day-check">${isSelected ? '&#10003;' : ''}</span>
-            </button>
-          `;
-        }).join('')}
-      </div>
-
-      <div class="month-counter fade-in" style="animation-delay:120ms" id="monthCounter">
-        <span id="monthCount">${monthCount}</span> / 4 lunches this month
-      </div>
-
-      <div class="section fade-in" style="animation-delay:200ms">
-        <div class="section-head">
-          <div class="eyebrow">Where to lunch?</div>
-        </div>
-        <div class="map-wrap" id="mapWrap"></div>
-        <div class="radius-selector" id="radiusSelector">
-          <button class="radius-btn" data-r="1">1 km</button>
-          <button class="radius-btn active" data-r="2">2 km</button>
-          <button class="radius-btn" data-r="5">5 km</button>
-        </div>
-      </div>
-    `;
-
-    wireWeek(selectedDates, monthCount);
-    initMap();
-  }
-
   function wireWeek(selectedDates, monthCount) {
     const grid = document.getElementById('weekGrid');
+    if (!grid) return;
     const counterEl = document.getElementById('monthCount');
 
     grid.querySelectorAll('.day-card:not([disabled])').forEach(btn => {
@@ -268,11 +251,17 @@
     });
   }
 
+  /* ============================================================
+     MAP — initialization
+     ============================================================ */
   async function initMap() {
     const wrap = document.getElementById('mapWrap');
     if (!wrap || typeof L === 'undefined') return;
 
-    let lat = 48.8566, lng = 2.3522, radius = 2;
+    // Cleanup previous instance
+    if (map) { map.remove(); map = null; radiusCircle = null; }
+
+    let lat = 48.8566, lng = 2.3522, radius = 3;
 
     try {
       const prefs = await db.member.getPreferences();
@@ -282,6 +271,13 @@
         radius = prefs.prefs.radius || radius;
       }
     } catch {}
+
+    // Snap old radius=2 to 3 (button no longer exists)
+    const validRadii = [1, 3, 5];
+    if (!validRadii.includes(radius)) {
+      radius = 3;
+      try { await db.member.setPreferences(radius, lat, lng); } catch {}
+    }
 
     // Set active radius button
     document.querySelectorAll('.radius-btn').forEach(b => {
@@ -348,7 +344,7 @@
   }
 
   /* ============================================================
-     CARNET PAGE (People met)
+     CONTACTS PAGE (People met)
      ============================================================ */
   async function renderCarnet() {
     const container = document.getElementById('carnetPage');
@@ -394,7 +390,7 @@
   }
 
   /* ============================================================
-     PROFIL PAGE
+     PROFILE PAGE
      ============================================================ */
   async function renderProfil() {
     const container = document.getElementById('profilPage');
@@ -465,10 +461,19 @@
     const ok = await checkAuth();
     if (!ok) return;
 
-    // Tab bar navigation
-    document.querySelectorAll('.tab').forEach(t => {
+    // Sidebar navigation
+    document.querySelectorAll('.rail-item').forEach(t => {
       t.addEventListener('click', () => setPage(t.dataset.page));
     });
+
+    // Sidebar logout
+    const sidebarLogout = document.getElementById('sidebarLogout');
+    if (sidebarLogout) {
+      sidebarLogout.addEventListener('click', () => {
+        db.memberSession.clear();
+        window.location.href = 'Sign In.html';
+      });
+    }
 
     setPage('home');
   })();
