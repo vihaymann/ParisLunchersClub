@@ -194,6 +194,7 @@
                 <button class="day-card${isSelected ? ' selected' : ''}" data-date="${iso}">
                   <span class="day-name">${dayNames[d.getDay()]}</span>
                   <span class="day-num">${d.getDate()}</span>
+                  <span class="day-status">${isSelected ? 'Free' : '—'}</span>
                 </button>
               `;
             }).join('')}
@@ -228,6 +229,7 @@
     const counterEl = document.getElementById('monthCount');
 
     grid.querySelectorAll('.day-card').forEach(btn => {
+      const statusEl = btn.querySelector('.day-status');
       btn.addEventListener('click', async () => {
         const date = btn.dataset.date;
         const isSelected = btn.classList.contains('selected');
@@ -238,6 +240,7 @@
           return;
         }
         btn.classList.toggle('selected');
+        if (statusEl) statusEl.textContent = btn.classList.contains('selected') ? 'Free' : '—';
         try {
           const res = await db.member.toggleAvailability(date);
           if (res.ok) {
@@ -246,12 +249,14 @@
             counterEl.textContent = monthCount;
           } else if (res.error === 'month_limit') {
             btn.classList.remove('selected');
+            if (statusEl) statusEl.textContent = '—';
             btn.classList.add('shake');
             setTimeout(() => btn.classList.remove('shake'), 400);
           }
         } catch (err) {
           console.error('Toggle error:', err);
           btn.classList.toggle('selected');
+          if (statusEl) statusEl.textContent = btn.classList.contains('selected') ? 'Free' : '—';
         }
       });
     });
