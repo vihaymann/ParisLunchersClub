@@ -1090,16 +1090,16 @@ const APP_STEPS = [
 ];
 
 const OB_STEPS = [
-  { key: 'ob_login',      name: 'Connexion' },
+  { key: 'ob_login',      name: 'Sign in' },
   { key: 'ob_seeking',    name: 'Intention' },
-  { key: 'ob_connection', name: 'Style' },
-  { key: 'ob_interests',  name: 'Passions' },
-  { key: 'ob_table',      name: 'A table' },
-  { key: 'ob_passion',    name: 'Metier' },
-  { key: 'ob_opento',     name: 'Ouvertures' },
-  { key: 'ob_memorable',  name: 'Souvenir' },
-  { key: 'ob_hidden',     name: 'Secret' },
-  { key: 'ob_guests',     name: 'Invites' }
+  { key: 'ob_connection', name: 'Chemistry' },
+  { key: 'ob_interests',  name: 'Interests' },
+  { key: 'ob_table',      name: 'Dynamic' },
+  { key: 'ob_passion',    name: 'Work' },
+  { key: 'ob_opento',     name: 'Open to' },
+  { key: 'ob_memorable',  name: 'Memory' },
+  { key: 'ob_hidden',     name: 'Between us' },
+  { key: 'ob_guests',     name: 'Dream table' }
 ];
 
 const STEPS = isOnboarding ? OB_STEPS : APP_STEPS;
@@ -1433,20 +1433,20 @@ function escapeHtml(s) {
 function obLogin() {
   const name = state.data.firstName ? `, ${escapeHtml(state.data.firstName)}` : '';
   return `
-    <div class="eyebrow">Bienvenue au club</div>
-    <h2 class="prompt">Connecte-toi${name}.</h2>
-    <p class="help">Entre ton code membre et ton code provisoire, tu les as recus par email.</p>
+    <div class="eyebrow">Welcome to the club</div>
+    <h2 class="prompt">Sign <span class="italic">in</span>${name}.</h2>
+    <p class="help">Enter the member code and temporary password from your acceptance email.</p>
     <div class="fields">
       <div class="field" data-name="refCode">
         <div class="field-body">
-          <label>Code membre <span class="req">required</span></label>
+          <label>Member code <span class="req">required</span></label>
           <input id="obRefCode" type="text" placeholder="LU-XX99" autocomplete="off" spellcheck="false" style="text-transform:uppercase" />
         </div>
       </div>
       <div class="field" data-name="tempPassword">
         <div class="field-body">
-          <label>Code provisoire <span class="req">required</span></label>
-          <input id="obTempPwd" type="text" inputmode="numeric" placeholder="8 chiffres" autocomplete="off" spellcheck="false" />
+          <label>Temporary password <span class="req">required</span></label>
+          <input id="obTempPwd" type="text" inputmode="numeric" placeholder="8 digits" autocomplete="off" spellcheck="false" />
         </div>
       </div>
     </div>
@@ -1457,14 +1457,14 @@ function obLogin() {
 function obSeeking() {
   const sel = state.data.seeking || [];
   return `
-    <div class="eyebrow">Ta premiere question</div>
-    <h2 class="prompt">Qu'est-ce que tu cherches <span class="italic">a table</span> ?</h2>
-    <p class="help">On te place avec une seule personne. Dis-nous ce qui compte. Plusieurs reponses possibles.</p>
+    <div class="eyebrow">Let's start</div>
+    <h2 class="prompt">What are you looking for <span class="italic">at the table</span>?</h2>
+    <p class="help">We seat you with one person. Tell us what matters. Pick as many as you like.</p>
     <div class="chips" data-name="seeking" data-mode="multi" data-max="4">
-      <button type="button" class="chip${sel.includes('friend') ? ' selected' : ''}" data-value="friend">Rencontrer un futur ami</button>
-      <button type="button" class="chip${sel.includes('professional') ? ' selected' : ''}" data-value="professional">Creer un lien pro qui fait sens</button>
-      <button type="button" class="chip${sel.includes('partner') ? ' selected' : ''}" data-value="partner">Trouver l'ame soeur</button>
-      <button type="button" class="chip${sel.includes('surprise') ? ' selected' : ''}" data-value="surprise">Me laisser surprendre</button>
+      <button type="button" class="chip${sel.includes('friend') ? ' selected' : ''}" data-value="friend">A future friend</button>
+      <button type="button" class="chip${sel.includes('professional') ? ' selected' : ''}" data-value="professional">A meaningful professional connection</button>
+      <button type="button" class="chip${sel.includes('partner') ? ' selected' : ''}" data-value="partner">Someone special</button>
+      <button type="button" class="chip${sel.includes('surprise') ? ' selected' : ''}" data-value="surprise">Surprise me</button>
     </div>
   `;
 }
@@ -1472,63 +1472,63 @@ function obSeeking() {
 function obConnection() {
   const sel = state.data.connectionStyle || [];
   return `
-    <div class="eyebrow">Ton style</div>
-    <h2 class="prompt">Un bon dejeuner avec un <span class="italic">inconnu</span>, ca ressemble a quoi ?</h2>
-    <p class="help">Il n'y a pas de mauvaise reponse. Plusieurs reponses possibles.</p>
+    <div class="eyebrow">Your style</div>
+    <h2 class="prompt">A great lunch with a <span class="italic">stranger</span> looks like...</h2>
+    <p class="help">No wrong answers. Pick as many as you like.</p>
     <div class="chips" data-name="connectionStyle" data-mode="multi" data-max="4">
-      <button type="button" class="chip${sel.includes('mutual_friends') ? ' selected' : ''}" data-value="mutual_friends">On connait les memes gens</button>
-      <button type="button" class="chip${sel.includes('work_click') ? ' selected' : ''}" data-value="work_click">On a parle boulot et ca a clique</button>
-      <button type="button" class="chip${sel.includes('debate') ? ' selected' : ''}" data-value="debate">On a debattu sans etre d'accord</button>
-      <button type="button" class="chip${sel.includes('laughter') ? ' selected' : ''}" data-value="laughter">On a ri et on s'est revu la semaine d'apres</button>
+      <button type="button" class="chip${sel.includes('mutual_friends') ? ' selected' : ''}" data-value="mutual_friends">We realised we know the same people</button>
+      <button type="button" class="chip${sel.includes('work_click') ? ' selected' : ''}" data-value="work_click">We talked shop and it clicked</button>
+      <button type="button" class="chip${sel.includes('debate') ? ' selected' : ''}" data-value="debate">We disagreed and stayed for dessert</button>
+      <button type="button" class="chip${sel.includes('laughter') ? ' selected' : ''}" data-value="laughter">We laughed and made plans the same week</button>
     </div>
   `;
 }
 
 function obInterests() {
   const tags = [
-    'Art et culture', 'Sport et outdoor', 'Gastronomie et vin',
-    'Tech et innovation', 'Voyage', 'Politique et societe',
-    'Musique', 'Entrepreneuriat', 'Parentalite et famille',
-    'Philo et introspection'
+    'Art and culture', 'Sport and outdoors', 'Food and wine',
+    'Tech and innovation', 'Travel', 'Politics and society',
+    'Music', 'Entrepreneurship', 'Parenting and family',
+    'Philosophy and self'
   ];
   const sel = state.data.interests || [];
   return `
-    <div class="eyebrow">Tes centres d'interet</div>
-    <h2 class="prompt">En dehors du boulot, qu'est-ce qui te fait parler pendant <span class="italic">une heure</span> ?</h2>
-    <p class="help">Cinq maximum. Choisis ceux qui reviennent vraiment.</p>
+    <div class="eyebrow">Your interests</div>
+    <h2 class="prompt">Outside of work, what keeps you talking for <span class="italic">an hour</span>?</h2>
+    <p class="help">Up to five. Choose the ones that actually come up.</p>
     <div class="chips" data-name="interests" data-mode="multi" data-max="5">
       ${tags.map(t => `<button type="button" class="chip${sel.includes(t) ? ' selected' : ''}" data-value="${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}
     </div>
-    <div class="chips-hint"><span id="chipsCount">${sel.length}</span> / 5 selectionnes</div>
+    <div class="chips-hint"><span id="chipsCount">${sel.length}</span> / 5 selected</div>
   `;
 }
 
 function obTable() {
   const d = state.data;
   return `
-    <div class="eyebrow">Dynamique</div>
-    <h2 class="prompt">A table, tu es <span class="italic">plutot</span>...</h2>
-    <p class="help">A deux, l'equilibre compte. Sois honnete.</p>
+    <div class="eyebrow">At the table</div>
+    <h2 class="prompt">When it's just the two of you, you're <span class="italic">usually</span>...</h2>
+    <p class="help">Balance matters. Be honest.</p>
     <div class="choices" data-name="tableStyle" data-mode="single">
       <button type="button" class="choice${d.tableStyle === 'talker' ? ' selected' : ''}" data-value="talker">
         <span class="indicator"></span>
         <div>
-          <div class="choice-label">Celui qui parle</div>
-          <div class="choice-desc">Tu racontes, tu lances, tu assumes les blancs.</div>
+          <div class="choice-label">The one talking</div>
+          <div class="choice-desc">You lead, you riff, you fill the silences.</div>
         </div>
       </button>
       <button type="button" class="choice${d.tableStyle === 'balanced' ? ' selected' : ''}" data-value="balanced">
         <span class="indicator"></span>
         <div>
           <div class="choice-label">Fifty-fifty</div>
-          <div class="choice-desc">Tu rebondis, tu relances, ca pingue et ca pongue.</div>
+          <div class="choice-desc">You volley back and forth. Ping, pong, repeat.</div>
         </div>
       </button>
       <button type="button" class="choice${d.tableStyle === 'listener' ? ' selected' : ''}" data-value="listener">
         <span class="indicator"></span>
         <div>
-          <div class="choice-label">Celui qui ecoute</div>
-          <div class="choice-desc">Tu poses les questions, tu creuses, tu relances.</div>
+          <div class="choice-label">The one listening</div>
+          <div class="choice-desc">You ask the questions. You dig deeper. You draw people out.</div>
         </div>
       </button>
     </div>
@@ -1537,14 +1537,14 @@ function obTable() {
 
 function obPassion() {
   return `
-    <div class="eyebrow">Ton metier</div>
-    <h2 class="prompt">Ce qui te <span class="italic">passionne</span> dans ton metier.</h2>
-    <p class="help">En une phrase. Pas un intitule LinkedIn, ce qui t'allume vraiment.</p>
+    <div class="eyebrow">Your work</div>
+    <h2 class="prompt">The thing that actually <span class="italic">excites</span> you about your job.</h2>
+    <p class="help">One sentence. Not the LinkedIn headline. The real reason you keep showing up.</p>
     <div class="fields">
       <div class="field" data-name="jobPassion">
         <div class="field-body">
-          <label>En une phrase <span class="req">required</span></label>
-          <input id="obPassion" type="text" maxlength="120" placeholder="Construire des choses que les gens utilisent sans mode d'emploi" />
+          <label>In one sentence <span class="req">required</span></label>
+          <input id="obPassion" type="text" maxlength="120" placeholder="Building things people use without reading the manual" />
         </div>
         <div class="suffix-count" id="passionCount" style="position:absolute; right:14px; top:14px;">${(state.data.jobPassion || '').length} / 120</div>
       </div>
@@ -1554,18 +1554,18 @@ function obPassion() {
 
 function obOpenTo() {
   const tags = [
-    'Trouver un associe',
-    'Recruter ou etre recrute',
-    'Investir ou lever des fonds',
-    'Mentorer ou etre mentore',
-    'Collaborations ponctuelles',
-    'Rien de pro, je viens pour l\'humain'
+    'Finding a co-founder',
+    'Hiring or being hired',
+    'Investing or raising',
+    'Mentoring or being mentored',
+    'One-off collaborations',
+    'Nothing professional, here for the people'
   ];
   const sel = state.data.openTo || [];
   return `
-    <div class="eyebrow">Ouvertures</div>
-    <h2 class="prompt">Tu es <span class="italic">ouvert</span> a...</h2>
-    <p class="help">Tout ce qui s'applique. Ou rien, si tu viens juste pour l'humain.</p>
+    <div class="eyebrow">Open to</div>
+    <h2 class="prompt">Beyond the conversation, you're <span class="italic">open</span> to...</h2>
+    <p class="help">All that apply. Or none, if you're just here for the human side.</p>
     <div class="chips" data-name="openTo" data-mode="multi" data-max="6">
       ${tags.map(t => `<button type="button" class="chip${sel.includes(t) ? ' selected' : ''}" data-value="${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}
     </div>
@@ -1574,14 +1574,14 @@ function obOpenTo() {
 
 function obMemorable() {
   return `
-    <div class="eyebrow">Un souvenir</div>
-    <h2 class="prompt">Raconte-nous un dejeuner <span class="italic">memorable</span>.</h2>
-    <p class="help">Un lieu, une personne, un sujet. Pas besoin que ce soit spectaculaire. Le meilleur dejeuner est souvent le plus simple.</p>
+    <div class="eyebrow">A memory</div>
+    <h2 class="prompt">Tell us about a <span class="italic">memorable</span> lunch.</h2>
+    <p class="help">A place, a person, a topic. Doesn't have to be grand. The best ones rarely are.</p>
     <div class="fields">
       <div class="field" data-name="memorableLunch">
         <div class="field-body">
-          <label>Ton souvenir <span class="req">required</span></label>
-          <textarea id="obMemorable" rows="4" maxlength="300" placeholder="Ce midi-la, dans ce bistrot du 11e..."></textarea>
+          <label>Your memory <span class="req">required</span></label>
+          <textarea id="obMemorable" rows="4" maxlength="300" placeholder="That afternoon at the corner bistro on Rue de Charonne..."></textarea>
         </div>
         <div class="suffix-count" id="memorableCount" style="position:absolute; right:14px; bottom:12px; top:auto;">${(state.data.memorableLunch || '').length} / 300</div>
       </div>
@@ -1591,14 +1591,14 @@ function obMemorable() {
 
 function obHidden() {
   return `
-    <div class="eyebrow">Entre nous</div>
-    <h2 class="prompt">Un sujet que tu n'abordes <span class="italic">jamais</span> en soiree ?</h2>
-    <p class="help">Un projet secret, une question que tu te poses, un virage que tu envisages. C'est confidentiel, on ne le montre a personne. Ca nous aide a trouver la bonne personne.</p>
+    <div class="eyebrow">Between us</div>
+    <h2 class="prompt">A topic you <span class="italic">never</span> bring up at parties?</h2>
+    <p class="help">A secret project, a question you keep turning over, a change you're considering. This stays between us. It helps us find the right person for you.</p>
     <div class="fields">
       <div class="field" data-name="hiddenTopic">
         <div class="field-body">
-          <label>Ton sujet <span class="req">required</span></label>
-          <textarea id="obHidden" rows="3" maxlength="200" placeholder="En ce moment, je pense a..."></textarea>
+          <label>Your topic <span class="req">required</span></label>
+          <textarea id="obHidden" rows="3" maxlength="200" placeholder="Lately, I've been thinking about..."></textarea>
         </div>
         <div class="suffix-count" id="hiddenCount" style="position:absolute; right:14px; bottom:12px; top:auto;">${(state.data.hiddenTopic || '').length} / 200</div>
       </div>
@@ -1609,26 +1609,26 @@ function obHidden() {
 function obGuests() {
   const d = state.data;
   return `
-    <div class="eyebrow">Le dejeuner impossible</div>
-    <h2 class="prompt">Si tu pouvais dejeuner avec <span class="italic">3 personnes</span> ?</h2>
-    <p class="help">Vivants, morts, celebres ou pas. Pas de bonne reponse. Celle qui dit vrai est celle qui vient en premier.</p>
+    <div class="eyebrow">The impossible lunch</div>
+    <h2 class="prompt">If you could sit down with <span class="italic">three people</span>?</h2>
+    <p class="help">Living, dead, famous or not. No right answer. The truest one is the first that comes to mind.</p>
     <div class="fields">
       <div class="field" data-name="dreamGuest1">
         <div class="field-body">
-          <label>Invite n.1 <span class="req">required</span></label>
-          <input id="obGuest1" type="text" placeholder="Premiere personne qui te vient" />
+          <label>Guest 1 <span class="req">required</span></label>
+          <input id="obGuest1" type="text" placeholder="First person who comes to mind" />
         </div>
       </div>
       <div class="field" data-name="dreamGuest2">
         <div class="field-body">
-          <label>Invite n.2 <span class="req">required</span></label>
-          <input id="obGuest2" type="text" placeholder="La deuxieme" />
+          <label>Guest 2 <span class="req">required</span></label>
+          <input id="obGuest2" type="text" placeholder="The second" />
         </div>
       </div>
       <div class="field" data-name="dreamGuest3">
         <div class="field-body">
-          <label>Invite n.3 <span class="req">required</span></label>
-          <input id="obGuest3" type="text" placeholder="La derniere" />
+          <label>Guest 3 <span class="req">required</span></label>
+          <input id="obGuest3" type="text" placeholder="And the last" />
         </div>
       </div>
     </div>
@@ -1705,11 +1705,11 @@ function render() {
 
   // Next button label
   if (isOnboarding && idx === total - 1) {
-    nextLabel.textContent = 'Terminer';
+    nextLabel.textContent = 'Finish';
   } else if (!isOnboarding && idx === total - 1) {
     nextLabel.textContent = 'Send application';
   } else if (isOnboarding && STEPS[idx].key === 'ob_login') {
-    nextLabel.textContent = 'Se connecter';
+    nextLabel.textContent = 'Sign in';
   } else {
     nextLabel.textContent = 'Continue';
   }
@@ -2080,18 +2080,18 @@ async function goNext() {
       const res = await window.TPLC.onboarding.verify(state.data.refCode, state.data.tempPassword);
       if (!res.ok) {
         const msgs = {
-          not_found: 'Code membre introuvable. Verifie ton code LU-XXXX.',
-          invalid_password: 'Code provisoire incorrect.',
-          already_onboarded: 'Tu as deja complete ton onboarding.'
+          not_found: 'Member code not found. Check your LU-XXXX code.',
+          invalid_password: 'Incorrect temporary password.',
+          already_onboarded: 'You have already completed onboarding.'
         };
-        if (errEl) { errEl.textContent = msgs[res.error] || 'Erreur inconnue.'; errEl.classList.add('show'); }
+        if (errEl) { errEl.textContent = msgs[res.error] || 'Something went wrong.'; errEl.classList.add('show'); }
         nextBtn.disabled = false;
         return;
       }
       state.data.memberId = res.member_id;
       state.data.firstName = res.first_name;
     } catch (e) {
-      if (errEl) { errEl.textContent = 'Erreur de connexion. Reessaie.'; errEl.classList.add('show'); }
+      if (errEl) { errEl.textContent = 'Connection error. Please try again.'; errEl.classList.add('show'); }
       nextBtn.disabled = false;
       return;
     }
@@ -2170,7 +2170,7 @@ function submit() {
 
 async function submitOnboarding() {
   nextBtn.dataset.state = 'loading';
-  nextLabel.textContent = 'Envoi';
+  nextLabel.textContent = 'Saving';
   nextArrow.style.display = 'none';
   if (!nextBtn.querySelector('.dots')) {
     const d = document.createElement('span');
@@ -2180,7 +2180,7 @@ async function submitOnboarding() {
   }
   backBtn.disabled = true;
 
-  setTimeout(() => { nextLabel.textContent = 'On enregistre ton profil'; }, 800);
+  setTimeout(() => { nextLabel.textContent = 'Setting up your profile'; }, 800);
 
   try {
     const res = await window.TPLC.onboarding.save(
@@ -2197,21 +2197,25 @@ async function submitOnboarding() {
   window.TPLC.memberSession.store(state.data.refCode, state.data.tempPassword, state.data.memberId, state.data.firstName);
 
   const name = state.data.firstName ? escapeHtml(state.data.firstName) : '';
+
+  // Brief pause then redirect to member dashboard
+  setTimeout(() => { window.location.href = 'Member.html'; }, 2400);
+
   wrap.innerHTML = `
     <div class="step active done">
       <div class="seal">L</div>
-      <h2>${name}, bienvenue <span class="italic">au club</span>.</h2>
-      <p>Ton profil est enregistre. On te contacte tres vite pour organiser ton premier dejeuner.</p>
-      <p>Un tete-a-tete, dans un bon restaurant, avec quelqu'un qu'on a choisi pour toi.</p>
-      <a href="Member.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;margin-top:24px;text-decoration:none;">Mon espace <span>&rarr;</span></a>
+      <h2>${name}, welcome to the <span class="italic">club</span>.</h2>
+      <p>Your profile is set. We'll be in touch very soon to arrange your first lunch.</p>
+      <p>A table for two, a good restaurant, someone we picked just for you.</p>
+      <a href="Member.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;margin-top:24px;text-decoration:none;">My space <span>&rarr;</span></a>
     </div>
   `;
   document.getElementById('stepNav').style.display = 'none';
   document.getElementById('progress').style.opacity = '0.4';
   prevArrowBtn.disabled = true;
   nextArrowBtn.disabled = true;
-  stepLabel.textContent = 'Termine';
-  stepNameEl.textContent = 'Bienvenue';
+  stepLabel.textContent = 'Complete';
+  stepNameEl.textContent = 'Welcome';
 }
 
 function generateRefCode() {
@@ -2226,7 +2230,7 @@ function generateRefCode() {
 /* ============ Boot ============ */
 if (isOnboarding) {
   document.title = 'Onboarding | The Paris Lunchers Club';
-  document.querySelector('.bar .left a').textContent = '← Accueil';
+  document.querySelector('.bar .left a').textContent = '← Home';
   document.querySelector('.bar .left a').href = 'The Paris Lunchers Club.html';
   const rightLink = document.querySelector('.bar .right a');
   if (rightLink) rightLink.style.display = 'none';

@@ -50,11 +50,11 @@
   function formatDate(iso) {
     if (!iso) return '';
     const d = new Date(iso);
-    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
   function formatShortDate(iso) {
     const d = new Date(iso);
-    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   }
 
   /* ============================================================
@@ -71,51 +71,51 @@
       const s = res.stats;
       const remaining = Math.max(0, s.monthLimit - s.monthLunches);
       const hour = new Date().getHours();
-      const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon apres-midi' : 'Bonsoir';
+      const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
       container.innerHTML = `
         <div class="greeting fade-in">
-          <div class="eyebrow">Espace membre</div>
+          <div class="eyebrow">Member space</div>
           <h1>${greeting}, <span class="italic">${esc(m.firstName)}</span>.</h1>
         </div>
 
         <div class="stat-cards fade-in" style="animation-delay:80ms">
           <div class="stat-card">
             <div class="number">${s.peopleMet}</div>
-            <div class="label">Rencontres</div>
+            <div class="label">People met</div>
           </div>
           <div class="stat-card">
             <div class="number">${remaining}<span class="small">/${s.monthLimit}</span></div>
-            <div class="label">Credits ce mois</div>
+            <div class="label">Credits this month</div>
           </div>
         </div>
 
         <div class="stat-cards fade-in" style="animation-delay:120ms">
           <div class="stat-card subtle">
             <div class="number">${s.lunchesAttended}</div>
-            <div class="label">Dejeuners au total</div>
+            <div class="label">Total lunches</div>
           </div>
           <div class="stat-card subtle">
             <div class="number">${s.monthLunches}</div>
-            <div class="label">Ce mois-ci</div>
+            <div class="label">This month</div>
           </div>
         </div>
 
         <div class="section fade-in" style="animation-delay:200ms">
           <div class="section-head">
-            <div class="eyebrow">Prochain dejeuner</div>
+            <div class="eyebrow">Next lunch</div>
           </div>
           <div class="empty-card">
-            <p>Pas encore de dejeuner prevu.</p>
-            <p class="muted">Indique tes disponibilites, on s'occupe du reste.</p>
-            <button class="btn-action" id="goWeekBtn">Ma semaine <span class="arrow">&rarr;</span></button>
+            <p>No lunch scheduled yet.</p>
+            <p class="muted">Set your availability and we'll take care of the rest.</p>
+            <button class="btn-action" id="goWeekBtn">My week <span class="arrow">&rarr;</span></button>
           </div>
         </div>
 
         ${s.peopleMet > 0 ? `
         <div class="section fade-in" style="animation-delay:280ms">
           <div class="section-head">
-            <div class="eyebrow">Dernieres rencontres</div>
+            <div class="eyebrow">Recent connections</div>
           </div>
           <div id="homeConnections"></div>
         </div>` : ''}
@@ -133,7 +133,7 @@
       }
     } catch (err) {
       console.error('Dashboard load error:', err);
-      container.innerHTML = `<div class="empty-card"><p>Erreur de chargement. Reessaie.</p></div>`;
+      container.innerHTML = `<div class="empty-card"><p>Something went wrong. Please try again.</p></div>`;
     }
   }
 
@@ -165,7 +165,7 @@
       days.push(d);
     }
 
-    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     // Get current availability
     let selectedDates = [];
@@ -182,9 +182,9 @@
 
     container.innerHTML = `
       <div class="greeting fade-in">
-        <div class="eyebrow">Disponibilites</div>
-        <h1>Quand es-tu <span class="italic">libre</span> ?</h1>
-        <p class="help">Choisis tes jours, on t'organise un dejeuner en tete-a-tete.</p>
+        <div class="eyebrow">Availability</div>
+        <h1>When are you <span class="italic">free</span>?</h1>
+        <p class="help">Pick your days. We'll arrange a one-on-one lunch for you.</p>
       </div>
 
       <div class="week-grid fade-in" style="animation-delay:80ms" id="weekGrid">
@@ -204,12 +204,12 @@
       </div>
 
       <div class="month-counter fade-in" style="animation-delay:120ms" id="monthCounter">
-        <span id="monthCount">${monthCount}</span> / 4 dejeuners ce mois
+        <span id="monthCount">${monthCount}</span> / 4 lunches this month
       </div>
 
       <div class="section fade-in" style="animation-delay:200ms">
         <div class="section-head">
-          <div class="eyebrow">Ou dejeuner ?</div>
+          <div class="eyebrow">Where to lunch?</div>
         </div>
         <div class="map-wrap" id="mapWrap"></div>
         <div class="radius-selector" id="radiusSelector">
@@ -354,11 +354,11 @@
     const container = document.getElementById('carnetPage');
     container.innerHTML = `
       <div class="greeting fade-in">
-        <div class="eyebrow">Carnet</div>
-        <h1>Tes <span class="italic">rencontres</span>.</h1>
+        <div class="eyebrow">Contacts</div>
+        <h1>Your <span class="italic">connections</span>.</h1>
       </div>
       <div id="carnetList" class="fade-in" style="animation-delay:80ms">
-        <div class="loading">Chargement...</div>
+        <div class="loading">Loading...</div>
       </div>
     `;
 
@@ -368,8 +368,8 @@
       if (!res.ok || !res.connections?.length) {
         list.innerHTML = `
           <div class="empty-card">
-            <p>Ton carnet est vide pour l'instant.</p>
-            <p class="muted">Apres ton premier dejeuner, les personnes rencontrees apparaitront ici.</p>
+            <p>Your contact book is empty for now.</p>
+            <p class="muted">After your first lunch, the people you've met will appear here.</p>
           </div>
         `;
         return;
@@ -388,7 +388,7 @@
     } catch (err) {
       console.error('Connections load error:', err);
       document.getElementById('carnetList').innerHTML = `
-        <div class="empty-card"><p>Erreur de chargement.</p></div>
+        <div class="empty-card"><p>Something went wrong. Please try again.</p></div>
       `;
     }
   }
@@ -405,7 +405,7 @@
     })());
 
     if (!data || !data.ok) {
-      container.innerHTML = `<div class="empty-card"><p>Erreur de chargement.</p></div>`;
+      container.innerHTML = `<div class="empty-card"><p>Something went wrong.</p></div>`;
       return;
     }
 
@@ -416,30 +416,30 @@
 
     container.innerHTML = `
       <div class="greeting fade-in">
-        <div class="eyebrow">Profil</div>
+        <div class="eyebrow">Profile</div>
         <h1>${esc(m.firstName)} <span class="italic">${esc(m.lastName)}</span>.</h1>
       </div>
 
       <div class="profile-section fade-in" style="animation-delay:80ms">
-        <div class="section-head"><div class="eyebrow">Abonnement</div></div>
-        ${profilRow('Plan', `${planLabel} · ${planPrice} EUR/mois`)}
-        ${profilRow('Membre depuis', formatDate(m.joinedAt))}
-        ${profilRow('Code membre', m.refCode)}
+        <div class="section-head"><div class="eyebrow">Membership</div></div>
+        ${profilRow('Plan', `${planLabel} · ${planPrice} EUR/month`)}
+        ${profilRow('Member since', formatDate(m.joinedAt))}
+        ${profilRow('Member code', m.refCode)}
       </div>
 
       <div class="profile-section fade-in" style="animation-delay:160ms">
-        <div class="section-head"><div class="eyebrow">Mes informations</div></div>
+        <div class="section-head"><div class="eyebrow">Personal details</div></div>
         ${profilRow('Email', m.email)}
-        ${profilRow('Telephone', (m.countryCode || '') + ' ' + (m.phone || ''))}
-        ${dob ? profilRow('Date de naissance', dob) : ''}
-        ${profilRow('Ville', m.city || 'Paris')}
-        ${profilRow('Metier', (m.profession || '') + (m.employer ? ' · ' + m.employer : ''))}
+        ${profilRow('Phone', (m.countryCode || '') + ' ' + (m.phone || ''))}
+        ${dob ? profilRow('Date of birth', dob) : ''}
+        ${profilRow('City', m.city || 'Paris')}
+        ${profilRow('Profession', (m.profession || '') + (m.employer ? ' · ' + m.employer : ''))}
         ${m.linkedin ? profilRow('LinkedIn', m.linkedin) : ''}
         ${m.instagram ? profilRow('Instagram', m.instagram) : ''}
       </div>
 
       <div class="profile-section fade-in" style="animation-delay:240ms">
-        <button class="btn-logout" id="logoutBtn">Se deconnecter</button>
+        <button class="btn-logout" id="logoutBtn">Sign out</button>
       </div>
     `;
 
