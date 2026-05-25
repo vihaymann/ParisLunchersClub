@@ -1494,7 +1494,7 @@ function stepReferral() {
         </div>
       </div>
 
-      <div class="ref-row" data-row="2" style="display:${has2 ? 'block' : 'none'}">
+      <div class="ref-row" data-row="2" style="display:${has2 ? 'flex' : 'none'}">
         <div class="ref-row-head">
           <span class="ref-row-label">Second reference</span>
           <button type="button" class="ref-remove" data-remove="2">remove</button>
@@ -1513,7 +1513,7 @@ function stepReferral() {
         </div>
       </div>
 
-      <div class="ref-row" data-row="3" style="display:${has3 ? 'block' : 'none'}">
+      <div class="ref-row" data-row="3" style="display:${has3 ? 'flex' : 'none'}">
         <div class="ref-row-head">
           <span class="ref-row-label">Third reference <span class="opt">rare</span></span>
           <button type="button" class="ref-remove" data-remove="3">remove</button>
@@ -2237,7 +2237,7 @@ function wireStep(idx) {
   if (key === 'referral') {
     function showRow(n) {
       const row = wrap.querySelector(`.ref-row[data-row="${n}"]`);
-      if (row) row.style.display = 'block';
+      if (row) row.style.display = 'flex';
       const addBtn = wrap.querySelector('#refAdd');
       if (addBtn) addBtn.style.display = (n >= 3) ? 'none' : 'inline-flex';
     }
