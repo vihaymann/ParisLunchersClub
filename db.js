@@ -418,6 +418,44 @@
     };
   }
 
+  /* ---------- Onboarding (member login + profile) ---------- */
+  const onboarding = {
+    async verify(refCode, tempPassword) {
+      const { data, error } = await sb.rpc('verify_member_login', {
+        p_ref_code: refCode,
+        p_temp_password: tempPassword
+      });
+      if (error) throw error;
+      return data;
+    },
+    async save(refCode, tempPassword, profile) {
+      const { data, error } = await sb.rpc('save_onboarding', {
+        p_ref_code: refCode,
+        p_temp_password: tempPassword,
+        p_seeking: profile.seeking,
+        p_connection_style: profile.connectionStyle,
+        p_interests: profile.interests,
+        p_table_style: profile.tableStyle,
+        p_job_passion: profile.jobPassion,
+        p_open_to: profile.openTo,
+        p_memorable_lunch: profile.memorableLunch,
+        p_hidden_topic: profile.hiddenTopic,
+        p_dream_guest_1: profile.dreamGuest1,
+        p_dream_guest_2: profile.dreamGuest2,
+        p_dream_guest_3: profile.dreamGuest3
+      });
+      if (error) throw error;
+      return data;
+    },
+    async getTempPassword(appId) {
+      const { data } = await sb.from('applications')
+        .select('temp_password')
+        .eq('id', appId)
+        .single();
+      return data?.temp_password;
+    }
+  };
+
   /* ---------- Public surface ---------- */
   window.TPLC = {
     applications,
@@ -427,6 +465,7 @@
     PLANS,
     session,
     submitApplication,
+    onboarding,
     resetAll() {}
   };
 })();

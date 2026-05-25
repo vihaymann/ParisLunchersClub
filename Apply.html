@@ -742,6 +742,111 @@ footer.foot {
 .foot a { transition: color 0.2s ease; }
 .foot a:hover { color: var(--ink); }
 
+/* ============ Onboarding: choice cards ============ */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.choice {
+  appearance: none;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  text-align: left;
+  color: var(--muted-2);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.choice:hover { border-color: var(--field-line-hover); color: var(--ink); }
+.choice.selected {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: color-mix(in oklch, var(--field) 70%, var(--ink) 6%);
+}
+.choice .indicator {
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--field-line);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+}
+.choice.selected .indicator {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+.choice.selected .indicator::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--bg);
+  font-weight: 700;
+}
+.choice .choice-label { font-weight: 600; }
+.choice .choice-desc {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* Chips (multi-select tags) */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  appearance: none;
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: 999px;
+  padding: 11px 20px;
+  color: var(--muted-2);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.chip:hover { border-color: var(--field-line-hover); color: var(--ink); }
+.chip.selected {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: color-mix(in oklch, var(--field) 70%, var(--ink) 6%);
+}
+.chips-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Onboarding login error */
+.ob-error {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: color-mix(in oklch, var(--danger) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--danger) 30%, transparent);
+  border-radius: 10px;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 500;
+  display: none;
+}
+.ob-error.show { display: block; }
+
 /* ============ Mobile responsive ============ */
 @media (max-width: 768px) {
   /* Header: hide center mark, compact nav */
@@ -891,6 +996,11 @@ footer.foot {
     flex-wrap: wrap;
   }
   .foot .c { order: -1; }
+
+  /* Onboarding mobile */
+  .choice { padding: 16px 16px; font-size: 15px; }
+  .chip { padding: 12px 18px; font-size: 14px; }
+  .chips { gap: 8px; }
 }
 
 </style>
@@ -955,13 +1065,15 @@ footer.foot {
 </div>
 
 <script>
-/* ============ Apply for Membership | Raya-style flow ============ */
+/* ============ Apply / Onboarding | Raya-style flow ============ */
 
-/* ---------- Paris clock ---------- */
+/* ---------- Mode detection ---------- */
+const MODE = new URLSearchParams(window.location.search).get('mode');
+const isOnboarding = MODE === 'onboard';
 
 /* ============ Step definitions ============ */
 
-const STEPS = [
+const APP_STEPS = [
   { key: 'name',      name: 'Name' },
   { key: 'email',     name: 'Email' },
   { key: 'phone',     name: 'Phone' },
@@ -974,9 +1086,40 @@ const STEPS = [
   { key: 'review',    name: 'Review' }
 ];
 
+const OB_STEPS = [
+  { key: 'ob_login',      name: 'Connexion' },
+  { key: 'ob_seeking',    name: 'Intention' },
+  { key: 'ob_connection', name: 'Style' },
+  { key: 'ob_interests',  name: 'Passions' },
+  { key: 'ob_table',      name: 'A table' },
+  { key: 'ob_passion',    name: 'Metier' },
+  { key: 'ob_opento',     name: 'Ouvertures' },
+  { key: 'ob_memorable',  name: 'Souvenir' },
+  { key: 'ob_hidden',     name: 'Secret' },
+  { key: 'ob_guests',     name: 'Invites' }
+];
+
+const STEPS = isOnboarding ? OB_STEPS : APP_STEPS;
+
 const state = {
   step: 0,
-  data: {
+  data: isOnboarding ? {
+    refCode: '',
+    tempPassword: '',
+    memberId: null,
+    firstName: '',
+    seeking: '',
+    connectionStyle: '',
+    interests: [],
+    tableStyle: '',
+    jobPassion: '',
+    openTo: [],
+    memorableLunch: '',
+    hiddenTopic: '',
+    dreamGuest1: '',
+    dreamGuest2: '',
+    dreamGuest3: ''
+  } : {
     countryCode: '+33',
     phone: '',
     email: '',
@@ -1282,6 +1425,233 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+/* ============ Onboarding step builders ============ */
+
+function obLogin() {
+  const name = state.data.firstName ? `, ${escapeHtml(state.data.firstName)}` : '';
+  return `
+    <div class="eyebrow">Bienvenue au club</div>
+    <h2 class="prompt">Connecte-toi${name}.</h2>
+    <p class="help">Entre ton code membre et ton code provisoire, tu les as recus par email.</p>
+    <div class="fields">
+      <div class="field" data-name="refCode">
+        <div class="field-body">
+          <label>Code membre <span class="req">required</span></label>
+          <input id="obRefCode" type="text" placeholder="LU-XX99" autocomplete="off" spellcheck="false" style="text-transform:uppercase" />
+        </div>
+      </div>
+      <div class="field" data-name="tempPassword">
+        <div class="field-body">
+          <label>Code provisoire <span class="req">required</span></label>
+          <input id="obTempPwd" type="text" placeholder="8 caracteres" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+    </div>
+    <div class="ob-error" id="obError"></div>
+  `;
+}
+
+function obSeeking() {
+  const d = state.data;
+  return `
+    <div class="eyebrow">Ta premiere question</div>
+    <h2 class="prompt">Qu'est-ce que tu cherches <span class="italic">a table</span> ?</h2>
+    <p class="help">On te place avec une seule personne. Dis-nous ce qui compte.</p>
+    <div class="choices" data-name="seeking" data-mode="single">
+      <button type="button" class="choice${d.seeking === 'friend' ? ' selected' : ''}" data-value="friend">
+        <span class="indicator"></span>
+        <span>Un futur ami</span>
+      </button>
+      <button type="button" class="choice${d.seeking === 'professional' ? ' selected' : ''}" data-value="professional">
+        <span class="indicator"></span>
+        <span>Un contact pro qui fait sens</span>
+      </button>
+      <button type="button" class="choice${d.seeking === 'surprise' ? ' selected' : ''}" data-value="surprise">
+        <span class="indicator"></span>
+        <span>Une surprise, je ne sais pas encore</span>
+      </button>
+    </div>
+  `;
+}
+
+function obConnection() {
+  const d = state.data;
+  return `
+    <div class="eyebrow">Ton style</div>
+    <h2 class="prompt">Un bon dejeuner avec un <span class="italic">inconnu</span>, ca ressemble a quoi ?</h2>
+    <p class="help">Il n'y a pas de mauvaise reponse.</p>
+    <div class="choices" data-name="connectionStyle" data-mode="single">
+      <button type="button" class="choice${d.connectionStyle === 'mutual_friends' ? ' selected' : ''}" data-value="mutual_friends">
+        <span class="indicator"></span>
+        <span>On a decouvert qu'on connait les memes gens</span>
+      </button>
+      <button type="button" class="choice${d.connectionStyle === 'work_click' ? ' selected' : ''}" data-value="work_click">
+        <span class="indicator"></span>
+        <span>On a parle de nos metiers et ca a clique</span>
+      </button>
+      <button type="button" class="choice${d.connectionStyle === 'debate' ? ' selected' : ''}" data-value="debate">
+        <span class="indicator"></span>
+        <span>On a debattu sans etre d'accord</span>
+      </button>
+      <button type="button" class="choice${d.connectionStyle === 'laughter' ? ' selected' : ''}" data-value="laughter">
+        <span class="indicator"></span>
+        <span>On a ri sans raison et on s'est revu la semaine d'apres</span>
+      </button>
+    </div>
+  `;
+}
+
+function obInterests() {
+  const tags = [
+    'Art et culture', 'Sport et outdoor', 'Gastronomie et vin',
+    'Tech et innovation', 'Voyage', 'Politique et societe',
+    'Musique', 'Entrepreneuriat', 'Parentalite et famille',
+    'Philo et introspection'
+  ];
+  const sel = state.data.interests || [];
+  return `
+    <div class="eyebrow">Tes centres d'interet</div>
+    <h2 class="prompt">En dehors du boulot, qu'est-ce qui te fait parler pendant <span class="italic">une heure</span> ?</h2>
+    <p class="help">Trois maximum. Choisis ceux qui reviennent vraiment.</p>
+    <div class="chips" data-name="interests" data-mode="multi" data-max="3">
+      ${tags.map(t => `<button type="button" class="chip${sel.includes(t) ? ' selected' : ''}" data-value="${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}
+    </div>
+    <div class="chips-hint"><span id="chipsCount">${sel.length}</span> / 3 selectionnes</div>
+  `;
+}
+
+function obTable() {
+  const d = state.data;
+  return `
+    <div class="eyebrow">Dynamique</div>
+    <h2 class="prompt">A table, tu es <span class="italic">plutot</span>...</h2>
+    <p class="help">A deux, l'equilibre compte. Sois honnete.</p>
+    <div class="choices" data-name="tableStyle" data-mode="single">
+      <button type="button" class="choice${d.tableStyle === 'talker' ? ' selected' : ''}" data-value="talker">
+        <span class="indicator"></span>
+        <div>
+          <div class="choice-label">Celui qui parle</div>
+          <div class="choice-desc">Tu racontes, tu lances, tu assumes les blancs.</div>
+        </div>
+      </button>
+      <button type="button" class="choice${d.tableStyle === 'balanced' ? ' selected' : ''}" data-value="balanced">
+        <span class="indicator"></span>
+        <div>
+          <div class="choice-label">Fifty-fifty</div>
+          <div class="choice-desc">Tu rebondis, tu relances, ca pingue et ca pongue.</div>
+        </div>
+      </button>
+      <button type="button" class="choice${d.tableStyle === 'listener' ? ' selected' : ''}" data-value="listener">
+        <span class="indicator"></span>
+        <div>
+          <div class="choice-label">Celui qui ecoute</div>
+          <div class="choice-desc">Tu poses les questions, tu creuses, tu relances.</div>
+        </div>
+      </button>
+    </div>
+  `;
+}
+
+function obPassion() {
+  return `
+    <div class="eyebrow">Ton metier</div>
+    <h2 class="prompt">Ce qui te <span class="italic">passionne</span> dans ton metier.</h2>
+    <p class="help">En une phrase. Pas un intitule LinkedIn, ce qui t'allume vraiment.</p>
+    <div class="fields">
+      <div class="field" data-name="jobPassion">
+        <div class="field-body">
+          <label>En une phrase <span class="req">required</span></label>
+          <input id="obPassion" type="text" maxlength="120" placeholder="Construire des choses que les gens utilisent sans mode d'emploi" />
+        </div>
+        <div class="suffix-count" id="passionCount" style="position:absolute; right:14px; top:14px;">${(state.data.jobPassion || '').length} / 120</div>
+      </div>
+    </div>
+  `;
+}
+
+function obOpenTo() {
+  const tags = [
+    'Trouver un associe',
+    'Recruter ou etre recrute',
+    'Investir ou lever des fonds',
+    'Mentorer ou etre mentore',
+    'Collaborations ponctuelles',
+    'Rien de pro, je viens pour l\'humain'
+  ];
+  const sel = state.data.openTo || [];
+  return `
+    <div class="eyebrow">Ouvertures</div>
+    <h2 class="prompt">Tu es <span class="italic">ouvert</span> a...</h2>
+    <p class="help">Tout ce qui s'applique. Ou rien, si tu viens juste pour l'humain.</p>
+    <div class="chips" data-name="openTo" data-mode="multi" data-max="6">
+      ${tags.map(t => `<button type="button" class="chip${sel.includes(t) ? ' selected' : ''}" data-value="${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}
+    </div>
+  `;
+}
+
+function obMemorable() {
+  return `
+    <div class="eyebrow">Un souvenir</div>
+    <h2 class="prompt">Raconte-nous un dejeuner <span class="italic">memorable</span>.</h2>
+    <p class="help">Un lieu, une personne, un sujet. Pas besoin que ce soit spectaculaire. Le meilleur dejeuner est souvent le plus simple.</p>
+    <div class="fields">
+      <div class="field" data-name="memorableLunch">
+        <div class="field-body">
+          <label>Ton souvenir <span class="req">required</span></label>
+          <textarea id="obMemorable" rows="4" maxlength="300" placeholder="Ce midi-la, dans ce bistrot du 11e..."></textarea>
+        </div>
+        <div class="suffix-count" id="memorableCount" style="position:absolute; right:14px; bottom:12px; top:auto;">${(state.data.memorableLunch || '').length} / 300</div>
+      </div>
+    </div>
+  `;
+}
+
+function obHidden() {
+  return `
+    <div class="eyebrow">Entre nous</div>
+    <h2 class="prompt">Un sujet que tu n'abordes <span class="italic">jamais</span> en soiree ?</h2>
+    <p class="help">Un projet secret, une question que tu te poses, un virage que tu envisages. C'est confidentiel, on ne le montre a personne. Ca nous aide a trouver la bonne personne.</p>
+    <div class="fields">
+      <div class="field" data-name="hiddenTopic">
+        <div class="field-body">
+          <label>Ton sujet <span class="req">required</span></label>
+          <textarea id="obHidden" rows="3" maxlength="200" placeholder="En ce moment, je pense a..."></textarea>
+        </div>
+        <div class="suffix-count" id="hiddenCount" style="position:absolute; right:14px; bottom:12px; top:auto;">${(state.data.hiddenTopic || '').length} / 200</div>
+      </div>
+    </div>
+  `;
+}
+
+function obGuests() {
+  const d = state.data;
+  return `
+    <div class="eyebrow">Le dejeuner impossible</div>
+    <h2 class="prompt">Si tu pouvais dejeuner avec <span class="italic">3 personnes</span> ?</h2>
+    <p class="help">Vivants, morts, celebres ou pas. Pas de bonne reponse. Celle qui dit vrai est celle qui vient en premier.</p>
+    <div class="fields">
+      <div class="field" data-name="dreamGuest1">
+        <div class="field-body">
+          <label>Invite n.1 <span class="req">required</span></label>
+          <input id="obGuest1" type="text" placeholder="Premiere personne qui te vient" />
+        </div>
+      </div>
+      <div class="field" data-name="dreamGuest2">
+        <div class="field-body">
+          <label>Invite n.2 <span class="req">required</span></label>
+          <input id="obGuest2" type="text" placeholder="La deuxieme" />
+        </div>
+      </div>
+      <div class="field" data-name="dreamGuest3">
+        <div class="field-body">
+          <label>Invite n.3 <span class="req">required</span></label>
+          <input id="obGuest3" type="text" placeholder="La derniere" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 /* ============ Render + navigation ============ */
 
 const wrap = document.getElementById('stepWrap');
@@ -1311,6 +1681,17 @@ function buildStepHtml(idx) {
     case 'referral': return stepReferral();
     case 'why':      return stepWhy();
     case 'review':   return stepReview();
+    /* Onboarding steps */
+    case 'ob_login':      return obLogin();
+    case 'ob_seeking':    return obSeeking();
+    case 'ob_connection': return obConnection();
+    case 'ob_interests':  return obInterests();
+    case 'ob_table':      return obTable();
+    case 'ob_passion':    return obPassion();
+    case 'ob_opento':     return obOpenTo();
+    case 'ob_memorable':  return obMemorable();
+    case 'ob_hidden':     return obHidden();
+    case 'ob_guests':     return obGuests();
   }
 }
 
@@ -1340,8 +1721,12 @@ function render() {
   nextArrowBtn.disabled = !isStepValid(idx);
 
   // Next button label
-  if (idx === total - 1) {
+  if (isOnboarding && idx === total - 1) {
+    nextLabel.textContent = 'Terminer';
+  } else if (!isOnboarding && idx === total - 1) {
     nextLabel.textContent = 'Send application';
+  } else if (isOnboarding && STEPS[idx].key === 'ob_login') {
+    nextLabel.textContent = 'Se connecter';
   } else {
     nextLabel.textContent = 'Continue';
   }
@@ -1358,6 +1743,7 @@ function render() {
 
 function hintFor(idx) {
   const key = STEPS[idx].key;
+  if (isOnboarding) return '';
   if (key === 'referral') return state.data.refName ? '' : 'Optional · but rare to get in without';
   if (key === 'why') return `${(state.data.why || '').length} / 300`;
   if (key === 'review') return '';
@@ -1595,6 +1981,63 @@ function wireStep(idx) {
       });
     });
   }
+
+  /* ---------- Onboarding: choice cards ---------- */
+  wrap.querySelectorAll('.choices').forEach(group => {
+    const mode = group.dataset.mode;
+    const name = group.dataset.name;
+    group.querySelectorAll('.choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (mode === 'single') {
+          group.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          state.data[name] = btn.dataset.value;
+        }
+        nextBtn.disabled = !isStepValid(state.step);
+        nextArrowBtn.disabled = !isStepValid(state.step);
+      });
+    });
+  });
+
+  /* ---------- Onboarding: chip multi-select ---------- */
+  wrap.querySelectorAll('.chips').forEach(group => {
+    const name = group.dataset.name;
+    const max = parseInt(group.dataset.max || '99', 10);
+    group.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const arr = state.data[name] || [];
+        const val = btn.dataset.value;
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          state.data[name] = arr.filter(v => v !== val);
+        } else if (arr.length < max) {
+          btn.classList.add('selected');
+          state.data[name] = [...arr, val];
+        }
+        const counter = wrap.querySelector('#chipsCount');
+        if (counter) counter.textContent = state.data[name].length;
+        nextBtn.disabled = !isStepValid(state.step);
+        nextArrowBtn.disabled = !isStepValid(state.step);
+      });
+    });
+  });
+
+  /* ---------- Onboarding: text counters ---------- */
+  if (key === 'ob_passion') {
+    const inp = document.getElementById('obPassion');
+    const ct = document.getElementById('passionCount');
+    if (inp && ct) inp.addEventListener('input', () => { ct.textContent = inp.value.length + ' / 120'; });
+  }
+  if (key === 'ob_memorable') {
+    const inp = document.getElementById('obMemorable');
+    const ct = document.getElementById('memorableCount');
+    if (inp && ct) inp.addEventListener('input', () => { ct.textContent = inp.value.length + ' / 300'; });
+  }
+  if (key === 'ob_hidden') {
+    const inp = document.getElementById('obHidden');
+    const ct = document.getElementById('hiddenCount');
+    if (inp && ct) inp.addEventListener('input', () => { ct.textContent = inp.value.length + ' / 200'; });
+  }
 }
 
 /* ============ Validation ============ */
@@ -1626,18 +2069,57 @@ function isStepValid(idx) {
     case 'referral': return true;  // optional
     case 'why':      return d.why.trim().length >= 12 && d.why.length <= 300;
     case 'review':   return true;
+    /* Onboarding validation */
+    case 'ob_login':      return d.refCode.trim().length >= 4 && d.tempPassword.trim().length >= 4;
+    case 'ob_seeking':    return !!d.seeking;
+    case 'ob_connection': return !!d.connectionStyle;
+    case 'ob_interests':  return (d.interests || []).length >= 1 && (d.interests || []).length <= 3;
+    case 'ob_table':      return !!d.tableStyle;
+    case 'ob_passion':    return (d.jobPassion || '').trim().length >= 10;
+    case 'ob_opento':     return (d.openTo || []).length >= 1;
+    case 'ob_memorable':  return (d.memorableLunch || '').trim().length >= 20;
+    case 'ob_hidden':     return (d.hiddenTopic || '').trim().length >= 10;
+    case 'ob_guests':     return (d.dreamGuest1 || '').trim().length > 0 && (d.dreamGuest2 || '').trim().length > 0 && (d.dreamGuest3 || '').trim().length > 0;
     default:         return true;
   }
 }
 
 /* ============ Navigation ============ */
 
-function goNext() {
-  if (state.step === STEPS.length - 1) return submit();
-  if (!isStepValid(state.step)) {
-    flashErrors();
-    return;
+async function goNext() {
+  if (!isStepValid(state.step)) { flashErrors(); return; }
+
+  /* Onboarding: verify login before advancing */
+  if (isOnboarding && STEPS[state.step].key === 'ob_login') {
+    nextBtn.disabled = true;
+    const errEl = document.getElementById('obError');
+    try {
+      const res = await window.TPLC.onboarding.verify(state.data.refCode, state.data.tempPassword);
+      if (!res.ok) {
+        const msgs = {
+          not_found: 'Code membre introuvable. Verifie ton code LU-XXXX.',
+          invalid_password: 'Code provisoire incorrect.',
+          already_onboarded: 'Tu as deja complete ton onboarding.'
+        };
+        if (errEl) { errEl.textContent = msgs[res.error] || 'Erreur inconnue.'; errEl.classList.add('show'); }
+        nextBtn.disabled = false;
+        return;
+      }
+      state.data.memberId = res.member_id;
+      state.data.firstName = res.first_name;
+    } catch (e) {
+      if (errEl) { errEl.textContent = 'Erreur de connexion. Reessaie.'; errEl.classList.add('show'); }
+      nextBtn.disabled = false;
+      return;
+    }
   }
+
+  /* Last step: submit */
+  if (state.step === STEPS.length - 1) {
+    if (isOnboarding) return submitOnboarding();
+    return submit();
+  }
+
   state.step++;
   render();
 }
@@ -1702,6 +2184,49 @@ function submit() {
   }, 3600);
 }
 
+async function submitOnboarding() {
+  nextBtn.dataset.state = 'loading';
+  nextLabel.textContent = 'Envoi';
+  nextArrow.style.display = 'none';
+  if (!nextBtn.querySelector('.dots')) {
+    const d = document.createElement('span');
+    d.className = 'dots';
+    d.innerHTML = '<span></span><span></span><span></span>';
+    nextBtn.appendChild(d);
+  }
+  backBtn.disabled = true;
+
+  setTimeout(() => { nextLabel.textContent = 'On enregistre ton profil'; }, 800);
+
+  try {
+    const res = await window.TPLC.onboarding.save(
+      state.data.refCode,
+      state.data.tempPassword,
+      state.data
+    );
+    if (!res.ok) throw new Error(res.error);
+  } catch (e) {
+    console.error('Onboarding save failed:', e);
+  }
+
+  const name = state.data.firstName ? escapeHtml(state.data.firstName) : '';
+  wrap.innerHTML = `
+    <div class="step active done">
+      <div class="seal">L</div>
+      <h2>${name}, bienvenue <span class="italic">au club</span>.</h2>
+      <p>Ton profil est enregistre. On te contacte tres vite pour organiser ton premier dejeuner.</p>
+      <p>Un tete-a-tete, dans un bon restaurant, avec quelqu'un qu'on a choisi pour toi.</p>
+      <div class="next-step">A bientot a table.</div>
+    </div>
+  `;
+  document.getElementById('stepNav').style.display = 'none';
+  document.getElementById('progress').style.opacity = '0.4';
+  prevArrowBtn.disabled = true;
+  nextArrowBtn.disabled = true;
+  stepLabel.textContent = 'Termine';
+  stepNameEl.textContent = 'Bienvenue';
+}
+
 function generateRefCode() {
   const letters = 'ACDEFGHJKLMNPQRSTUVWXY';
   const pick = (s) => s[Math.floor(Math.random() * s.length)];
@@ -1712,6 +2237,13 @@ function generateRefCode() {
 }
 
 /* ============ Boot ============ */
+if (isOnboarding) {
+  document.title = 'Onboarding | The Paris Lunchers Club';
+  document.querySelector('.bar .left a').textContent = '← Accueil';
+  document.querySelector('.bar .left a').href = 'The Paris Lunchers Club.html';
+  const rightLink = document.querySelector('.bar .right a');
+  if (rightLink) rightLink.style.display = 'none';
+}
 render();
 
 </script>

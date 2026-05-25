@@ -1035,6 +1035,76 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
     font-size: 11px;
   }
 }
+
+/* ---------- Credentials modal ---------- */
+.cred-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000;
+  opacity: 0; transition: opacity 0.22s;
+}
+.cred-overlay.open { opacity: 1; }
+.cred-modal {
+  background: #181715;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 32px 36px 28px;
+  max-width: 440px; width: 92%;
+}
+.cred-title {
+  font-family: var(--display);
+  font-size: 20px; font-weight: 600;
+  margin-bottom: 6px;
+}
+.cred-sub {
+  font-size: 13px; color: var(--muted-2);
+  line-height: 1.5; margin-bottom: 22px;
+}
+.cred-fields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+.cred-field, .cred-link {
+  display: flex; align-items: center; gap: 10px;
+}
+.cred-field label, .cred-link label {
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--muted);
+  min-width: 110px; flex-shrink: 0;
+}
+.cred-value {
+  font-family: var(--display);
+  font-size: 16px; font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  flex: 1;
+}
+.cred-url {
+  font-size: 12px; letter-spacing: 0;
+  word-break: break-all; color: var(--muted-2);
+}
+.cred-copy {
+  background: none; border: 1px solid var(--field-line);
+  color: var(--muted-2); border-radius: 6px;
+  font-size: 11px; padding: 4px 10px;
+  cursor: url('assets/fork-cursor.png') 32 4, pointer;
+  transition: color 0.18s, border-color 0.18s;
+}
+.cred-copy:hover { color: var(--ink); border-color: var(--muted); }
+.cred-link { margin-bottom: 24px; }
+.cred-done {
+  display: block; width: 100%;
+  background: var(--ink); color: var(--bg);
+  border: none; border-radius: 8px;
+  font-family: var(--sans); font-size: 14px; font-weight: 500;
+  padding: 12px; cursor: url('assets/fork-cursor.png') 32 4, pointer;
+  transition: opacity 0.18s;
+}
+.cred-done:hover { opacity: 0.88; }
+
+@media (max-width: 768px) {
+  .cred-modal { padding: 24px 20px 20px; }
+  .cred-field, .cred-link { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .cred-field label, .cred-link label { min-width: unset; }
+}
 </style>
 </head>
 

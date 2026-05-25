@@ -676,6 +676,11 @@
         if (newStatus === 'accepted') {
           const currentPlan = await db.plans.get(id);
           await db.plans.set(id, currentPlan || 'standard');
+          // Fetch the auto-generated temp password for the acceptance email
+          const tempPwd = await db.onboarding.getTempPassword(id);
+          if (tempPwd) {
+            showCredentialsModal(d.firstName, app.refCode, tempPwd);
+          }
         }
         closeDrawer();
         await boot();
@@ -719,6 +724,54 @@
   }
   function statusPill(s) {
     return `<span class="status ${s}"><span class="dot"></span>${s}</span>`;
+  }
+
+  /* ============================================================
+     Credentials modal (shown after accepting a member)
+     ============================================================ */
+  function showCredentialsModal(firstName, refCode, tempPassword) {
+    const overlay = document.createElement('div');
+    overlay.className = 'cred-overlay';
+    overlay.innerHTML = `
+      <div class="cred-modal">
+        <div class="cred-title">Member accepted</div>
+        <p class="cred-sub">Include these credentials in ${escape(firstName)}'s acceptance email so they can complete onboarding.</p>
+        <div class="cred-fields">
+          <div class="cred-field">
+            <label>Reference code</label>
+            <div class="cred-value" id="credRef">${escape(refCode)}</div>
+            <button class="cred-copy" data-copy="${escape(refCode)}">Copy</button>
+          </div>
+          <div class="cred-field">
+            <label>Temporary password</label>
+            <div class="cred-value" id="credPwd">${escape(tempPassword)}</div>
+            <button class="cred-copy" data-copy="${escape(tempPassword)}">Copy</button>
+          </div>
+        </div>
+        <div class="cred-link">
+          <label>Onboarding link</label>
+          <div class="cred-value cred-url" id="credUrl">${window.location.origin + window.location.pathname.replace('Staff.html', 'Apply.html')}?mode=onboard</div>
+          <button class="cred-copy" data-copy-url>Copy</button>
+        </div>
+        <button class="cred-done" id="credDone">Done</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('open'));
+
+    overlay.querySelectorAll('.cred-copy').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.copy || document.getElementById('credUrl').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = 'Copied';
+          setTimeout(() => btn.textContent = 'Copy', 1400);
+        });
+      });
+    });
+    overlay.querySelector('#credDone').addEventListener('click', () => {
+      overlay.classList.remove('open');
+      setTimeout(() => overlay.remove(), 260);
+    });
   }
 
   /* ============================================================
