@@ -536,6 +536,22 @@
     }
   }
 
+  function formatExpiry(createdAt, days = 7) {
+    if (!createdAt) return null;
+    const created = new Date(createdAt).getTime();
+    if (isNaN(created)) return null;
+    const expiresAt = created + days * 24 * 60 * 60 * 1000;
+    const diff = expiresAt - Date.now();
+    if (diff <= 0) return 'Expired';
+    const d = Math.floor(diff / (24 * 60 * 60 * 1000));
+    const h = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    if (d === 0) {
+      const m = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+      return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
+    return `${d}d ${h}h`;
+  }
+
   function inviteCard(inv) {
     const statusLabels = {
       pending: 'Link sent',
@@ -544,14 +560,25 @@
       onboarded: 'Onboarded',
       expired: 'Expired'
     };
+    let expiryNote = '';
+    let renderStatus = inv.status;
+    if (inv.status === 'pending') {
+      const expiry = formatExpiry(inv.createdAt, 7);
+      if (expiry === 'Expired') {
+        renderStatus = 'expired';
+      } else if (expiry) {
+        expiryNote = `<div class="meta invite-expiry">Expires in ${expiry}</div>`;
+      }
+    }
     return `
       <div class="connection-card">
         <div class="avatar ${avatarClass(inv.firstName, inv.lastName)}">${esc(initials(inv.firstName, inv.lastName))}</div>
         <div class="info">
           <div class="name">${esc(inv.firstName)} ${esc(inv.lastName)}</div>
           <div class="meta">${esc(inv.email)}</div>
+          ${expiryNote}
         </div>
-        <span class="status-pill ${inv.status}">${statusLabels[inv.status] || inv.status}</span>
+        <span class="status-pill ${renderStatus}">${statusLabels[renderStatus] || renderStatus}</span>
       </div>
     `;
   }
