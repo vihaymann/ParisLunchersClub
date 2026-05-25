@@ -1,6 +1,6 @@
-# The Paris Lunchers Club — Claude Code brief
+# Lunchers Club — Claude Code brief
 
-You're picking up an interactive HTML prototype for **The Paris Lunchers Club**, a private members' club for curated lunches in Paris. The prototype is fully functional — landing, sign in, member application flow, and a complete staff back-of-house with dashboards, member/application management, and a data room (MRR/ARR/charts). All persistence is currently **mock**, backed by `localStorage` through a single data-layer module.
+You're picking up an interactive HTML prototype for **Lunchers Club**, a private members' club for curated lunches in Paris. The prototype is fully functional — landing, sign in, member application flow, and a complete staff back-of-house with dashboards, member/application management, and a data room (MRR/ARR/charts). All persistence is currently **mock**, backed by `localStorage` through a single data-layer module.
 
 Your job is to **turn this prototype into a real product**: replace the mock backend with a real one, harden the flows, and host it.
 
@@ -10,7 +10,7 @@ Your job is to **turn this prototype into a real product**: replace the mock bac
 
 ```
 .
-├── The Paris Lunchers Club.html   Public landing page (hero, slot-reel headline, CTA → Apply)
+├── Lunchers Club.html   Public landing page (hero, slot-reel headline, CTA → Apply)
 ├── Sign In.html                   Members entrance (mock passphrase login + topic cycle)
 ├── Apply.html                     10-step membership application (Name → … → Why → Review)
 ├── Staff.html                     Back-of-house shell (login → left-rail dashboard)
@@ -120,7 +120,7 @@ Member activity ranking uses `lunches.all().forEach(l => l.attendees)` — once 
 
 Drawer (right-side) opens on any row click, shows full profile, has **Accept / Waitlist / Decline** actions that write back through `applications.update()` and re-render.
 
-### Sign In.html, The Paris Lunchers Club.html
+### Sign In.html, Lunchers Club.html
 Mostly visual. Sign In has a rotating italic topic word ("politics → finance → love → friendship…", 1.3s interval) and a passphrase input that doesn't actually authenticate yet — wire to the same real auth endpoint as Staff.
 
 ---
@@ -165,7 +165,7 @@ Mostly visual. Sign In has a rotating italic topic word ("politics → finance �
 ---
 
 ## Quick local check before you start
-1. Open `The Paris Lunchers Club.html` — landing renders, fork cursor everywhere.
+1. Open `Lunchers Club.html` — landing renders, fork cursor everywhere.
 2. Click Apply (or footer → Apply). Submit a fake application end-to-end.
 3. Footer → Staff. Log in `staff@plc.com` / `lunch2026`.
 4. Confirm your test application appears at the top of the Applications table with status `pending`.

@@ -12,13 +12,13 @@
   function showLogin() {
     loginView.classList.add('active');
     dashView.classList.remove('active');
-    document.title = 'Staff sign in | The Paris Lunchers Club';
+    document.title = 'Staff sign in | Lunchers Club';
     setTimeout(() => document.getElementById('email')?.focus(), 100);
   }
   async function showDash() {
     loginView.classList.remove('active');
     dashView.classList.add('active');
-    document.title = 'Staff | The Paris Lunchers Club';
+    document.title = 'Staff | Lunchers Club';
     await boot();
   }
 

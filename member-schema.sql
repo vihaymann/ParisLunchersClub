@@ -1,5 +1,5 @@
 -- ============================================================
--- Member dashboard schema for The Paris Lunchers Club
+-- Member dashboard schema for Lunchers Club
 -- Run in Supabase SQL Editor AFTER the onboarding schema
 -- ============================================================
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>My Space | The Paris Lunchers Club</title>
+<title>My Space | Lunchers Club</title>
 <link rel="preload" as="image" href="assets/fork-cursor.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -154,6 +154,15 @@ body {
 .page.active { display: block; }
 
 /* ============ Typography ============ */
+.greeting {
+  padding: 0;
+}
+#homePage .greeting {
+  background: radial-gradient(ellipse at 20% 0%, color-mix(in oklch, var(--accent) 6%, transparent) 0%, transparent 70%);
+  padding: 24px 24px 20px;
+  border-radius: 16px;
+  margin: -24px -24px 0;
+}
 .greeting h1 {
   font-family: var(--display);
   font-size: 32px; font-weight: 500;
@@ -161,11 +170,29 @@ body {
   line-height: 1.15;
   margin-top: 6px;
 }
+.greeting-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted-2);
+  margin-top: 8px;
+  opacity: 0;
+  animation: fadeIn 0.6s ease 0.3s both;
+}
 .italic { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .eyebrow {
   font-size: 10px; font-weight: 500;
   letter-spacing: 0.28em; text-transform: uppercase;
   color: var(--muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
 }
 .help {
   font-size: 14px; color: var(--muted-2); margin-top: 8px; line-height: 1.5;
@@ -179,12 +206,36 @@ body {
 }
 .fade-in { animation: fadeIn 0.45s ease both; }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); filter: blur(2px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.slide-up { animation: slideUp 0.5s ease both; animation-delay: var(--delay, 0ms); }
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-4px); }
   40%, 80% { transform: translateX(4px); }
 }
 .shake { animation: shake 0.35s ease; }
+
+@keyframes checkPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes cardPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.pop { animation: cardPop 0.2s ease; }
+
+@keyframes counterPulse {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
 
 /* ============ Stat cards ============ */
 .stat-cards {
@@ -193,9 +244,15 @@ body {
 }
 .stat-card {
   background: var(--field);
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in oklch, var(--accent) 18%, var(--line));
   border-radius: 14px;
   padding: 20px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--accent) 6%, transparent);
+  border-color: color-mix(in oklch, var(--accent) 30%, var(--line));
 }
 .stat-card .number {
   font-family: var(--display);
@@ -217,7 +274,7 @@ body {
 .section { margin-top: 36px; }
 .section-head {
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid color-mix(in oklch, var(--accent) 12%, var(--line));
   margin-bottom: 16px;
 }
 .profile-section { margin-top: 32px; }
@@ -232,12 +289,36 @@ body {
 }
 .empty-card p { font-size: 14px; line-height: 1.55; }
 .empty-card .muted { margin-top: 4px; }
+.empty-card.placeholder {
+  border-style: dashed;
+  border-color: color-mix(in oklch, var(--accent) 25%, var(--line));
+  text-align: center;
+  padding: 32px 24px;
+}
+.empty-card.placeholder .empty-icon {
+  display: block;
+  margin: 0 auto 14px;
+  opacity: 0.5;
+}
+.empty-card.placeholder p:first-of-type {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--muted-2);
+}
 
 /* ============ Connection cards ============ */
 .connection-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px 0;
+  padding: 14px 4px 14px 12px;
   border-bottom: 1px solid var(--line);
+  border-left: 2px solid transparent;
+  transition: transform 0.15s ease, border-left-color 0.15s ease, background 0.15s ease;
+  border-radius: 4px;
+}
+.connection-card:hover {
+  transform: translateX(2px);
+  border-left-color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 2%, transparent);
 }
 .connection-card:last-child { border-bottom: none; }
 .avatar {
@@ -248,7 +329,16 @@ body {
   font-size: 14px; font-weight: 500;
   color: var(--muted-2);
   flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
+.connection-card:hover .avatar { transform: scale(1.05); }
+
+/* Avatar color palette */
+.av-0 { background: color-mix(in oklch, #C9A37A 15%, var(--field)); color: #C9A37A; border-color: color-mix(in oklch, #C9A37A 25%, var(--line)); }
+.av-1 { background: color-mix(in oklch, #7A9B6E 15%, var(--field)); color: #7A9B6E; border-color: color-mix(in oklch, #7A9B6E 25%, var(--line)); }
+.av-2 { background: color-mix(in oklch, #B07A8A 15%, var(--field)); color: #B07A8A; border-color: color-mix(in oklch, #B07A8A 25%, var(--line)); }
+.av-3 { background: color-mix(in oklch, #7A8FB0 15%, var(--field)); color: #7A8FB0; border-color: color-mix(in oklch, #7A8FB0 25%, var(--line)); }
+.av-4 { background: color-mix(in oklch, #B0836E 15%, var(--field)); color: #B0836E; border-color: color-mix(in oklch, #B0836E 25%, var(--line)); }
 .connection-card .info { flex: 1; min-width: 0; }
 .connection-card .name { font-weight: 500; font-size: 14px; }
 .connection-card .meta {
@@ -276,8 +366,9 @@ body {
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
   -webkit-tap-highlight-color: transparent;
 }
-.day-card:not([disabled]):hover {
-  border-color: color-mix(in oklch, var(--ink) 30%, var(--line));
+.day-card:not([disabled]):not(.selected):hover {
+  border-color: color-mix(in oklch, var(--accent) 30%, var(--line));
+  background: color-mix(in oklch, var(--accent) 4%, var(--field));
 }
 .day-card.selected {
   border-color: var(--ok);
@@ -300,7 +391,9 @@ body {
 .day-check {
   font-size: 12px; color: var(--ok);
   height: 16px; margin-top: 4px;
+  display: inline-block;
 }
+.day-card.selected .day-check { animation: checkPop 0.3s ease both; }
 
 .month-counter {
   text-align: center;
@@ -310,7 +403,7 @@ body {
 }
 .month-counter span {
   font-family: var(--display);
-  font-weight: 600; color: var(--ink);
+  font-weight: 600; color: var(--accent);
 }
 
 /* ============ Map ============ */
@@ -319,6 +412,17 @@ body {
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--line);
+  position: relative;
+}
+.map-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 24px;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+  z-index: 400;
+  pointer-events: none;
+  border-radius: 14px 14px 0 0;
 }
 .map-wrap .leaflet-control-attribution { display: none; }
 
@@ -344,6 +448,7 @@ body {
   border-color: var(--accent);
   color: var(--accent);
   background: color-mix(in oklch, var(--accent) 8%, var(--field));
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px color-mix(in oklch, var(--accent) 10%, transparent);
 }
 .rec-label {
   display: block;
@@ -591,7 +696,7 @@ input:-webkit-autofill:focus {
 
   <!-- ============ Left rail ============ -->
   <aside class="rail">
-    <div class="brand">The Paris Lunchers<span class="sub">Member</span></div>
+    <div class="brand">Lunchers Club<span class="sub">Member</span></div>
 
     <button class="rail-item active" data-page="home">
       <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-8 9 8v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9z"/></svg></span>

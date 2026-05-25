@@ -1,5 +1,5 @@
 -- ============================================================
--- The Paris Lunchers Club — Supabase Schema
+-- Lunchers Club — Supabase Schema
 -- Run this in Supabase Dashboard > SQL Editor > New query
 -- ============================================================
 

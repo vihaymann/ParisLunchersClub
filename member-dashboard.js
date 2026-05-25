@@ -57,6 +57,45 @@
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   }
 
+  /* ---------- Greeting sub-lines ---------- */
+  const GREETING_SUBS = [
+    'Ready for your next conversation?',
+    'Who will you meet this week?',
+    'Your table is waiting.',
+    'Good things happen over lunch.',
+    'Every meal is a new connection.'
+  ];
+  function randomSub() {
+    return GREETING_SUBS[Math.floor(Math.random() * GREETING_SUBS.length)];
+  }
+
+  /* ---------- Animated counter ---------- */
+  function animateCounters() {
+    document.querySelectorAll('.counter-target').forEach(el => {
+      const target = parseInt(el.dataset.target, 10);
+      const suffix = el.dataset.suffix || '';
+      if (isNaN(target) || target === 0) { el.textContent = '0' + suffix; return; }
+      const duration = 600;
+      const start = performance.now();
+      el.textContent = '0' + suffix;
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(eased * target);
+        el.textContent = current + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /* ---------- Avatar color hash ---------- */
+  function avatarClass(first, last) {
+    const hash = ((first || 'A').charCodeAt(0) + (last || 'A').charCodeAt(0)) % 5;
+    return 'av-' + hash;
+  }
+
   /* ============================================================
      HOME PAGE (stats + availability + map + connections)
      ============================================================ */
@@ -101,23 +140,25 @@
       }
 
       container.innerHTML = `
-        <div class="greeting fade-in">
+        <div class="greeting slide-up">
           <div class="eyebrow">Member space</div>
           <h1>${greeting}, <span class="italic">${esc(m.firstName)}</span>.</h1>
+          <p class="greeting-sub">${randomSub()}</p>
         </div>
 
-        <div class="stat-cards fade-in" style="animation-delay:80ms">
+        <div class="stat-cards slide-up" style="--delay:100ms">
           <div class="stat-card">
-            <div class="number">${s.peopleMet}</div>
+            <div class="number"><span class="counter-target" data-target="${s.peopleMet}">0</span></div>
             <div class="label">People met</div>
           </div>
           <div class="stat-card">
-            <div class="number">${remaining}<span class="small">/${s.monthLimit}</span></div>
+            <div class="number"><span class="counter-target" data-target="${remaining}"
+              data-suffix="/${s.monthLimit}">0/${s.monthLimit}</span></div>
             <div class="label">Credits this month</div>
           </div>
         </div>
 
-        <div class="section fade-in" style="animation-delay:160ms">
+        <div class="section slide-up" style="--delay:200ms">
           <div class="section-head">
             <div class="eyebrow">Your week</div>
           </div>
@@ -142,7 +183,7 @@
           </div>
         </div>
 
-        <div class="section fade-in" style="animation-delay:240ms">
+        <div class="section slide-up" style="--delay:300ms">
           <div class="section-head">
             <div class="eyebrow">Where to lunch?</div>
           </div>
@@ -154,18 +195,21 @@
           </div>
         </div>
 
-        <div class="section fade-in" style="animation-delay:320ms">
+        <div class="section slide-up" style="--delay:400ms">
           <div class="section-head">
             <div class="eyebrow">Next lunch</div>
           </div>
-          <div class="empty-card">
-            <p>No lunch scheduled yet.</p>
-            <p class="muted">Set your availability above and we'll take care of the rest.</p>
+          <div class="empty-card placeholder">
+            <svg class="empty-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+            </svg>
+            <p>Your next lunch is being arranged.</p>
+            <p class="muted">Pick your days above, and we'll handle the seating.</p>
           </div>
         </div>
 
         ${s.peopleMet > 0 ? `
-        <div class="section fade-in" style="animation-delay:400ms">
+        <div class="section slide-up" style="--delay:500ms">
           <div class="section-head">
             <div class="eyebrow">Recent connections</div>
           </div>
@@ -173,7 +217,8 @@
         </div>` : ''}
       `;
 
-      // Wire availability and map
+      // Animate counters, wire availability and map
+      animateCounters();
       wireWeek(selectedDates, monthCount);
       initMap();
 
@@ -192,9 +237,10 @@
   }
 
   function connectionCard(c) {
+    const avClass = avatarClass(c.firstName, c.lastName);
     return `
       <div class="connection-card">
-        <div class="avatar">${esc(initials(c.firstName, c.lastName))}</div>
+        <div class="avatar ${avClass}">${esc(initials(c.firstName, c.lastName))}</div>
         <div class="info">
           <div class="name">${esc(c.firstName)} ${esc(c.lastName)}</div>
           <div class="meta">${esc(c.profession || '')}${c.employer ? ' · ' + esc(c.employer) : ''}</div>
@@ -233,6 +279,8 @@
             if (res.action === 'added') {
               check.innerHTML = '&#10003;';
               monthCount++;
+              btn.classList.add('pop');
+              setTimeout(() => btn.classList.remove('pop'), 250);
             } else {
               check.innerHTML = '';
               monthCount--;
@@ -373,7 +421,7 @@
       }
       list.innerHTML = res.connections.map(c => `
         <div class="connection-card">
-          <div class="avatar">${esc(initials(c.firstName, c.lastName))}</div>
+          <div class="avatar ${avatarClass(c.firstName, c.lastName)}">${esc(initials(c.firstName, c.lastName))}</div>
           <div class="info">
             <div class="name">${esc(c.firstName)} ${esc(c.lastName)}</div>
             <div class="meta">${esc(c.profession || '')}${c.employer ? ' · ' + esc(c.employer) : ''}</div>
@@ -497,7 +545,7 @@
     };
     return `
       <div class="connection-card">
-        <div class="avatar">${esc(initials(inv.firstName, inv.lastName))}</div>
+        <div class="avatar ${avatarClass(inv.firstName, inv.lastName)}">${esc(initials(inv.firstName, inv.lastName))}</div>
         <div class="info">
           <div class="name">${esc(inv.firstName)} ${esc(inv.lastName)}</div>
           <div class="meta">${esc(inv.email)}</div>

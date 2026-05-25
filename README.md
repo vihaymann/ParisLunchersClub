@@ -1,4 +1,4 @@
-# The Paris Lunchers Club
+# Lunchers Club
 
 A private members' club for curated lunches in Paris. This repo contains the working prototype: public landing, members sign-in, application flow, and a staff back-of-house with applications, members, lunches, and a data room.
 
@@ -21,7 +21,7 @@ Or just double-click any HTML file.
 ## Files
 | File | What |
 |---|---|
-| `The Paris Lunchers Club.html` | Public landing page |
+| `Lunchers Club.html` | Public landing page |
 | `Sign In.html` | Members sign-in (mock) |
 | `Apply.html` | 10-step membership application |
 | `Staff.html` | Staff back-of-house — login + left-rail dashboard |

@@ -1,5 +1,5 @@
 /* ============================================================
-   The Paris Lunchers Club — Supabase data layer
+   Lunchers Club — Supabase data layer
    ============================================================
    Backed by Supabase (Postgres + Auth + RLS). Every read/write
    goes through this module via the window.TPLC global.
