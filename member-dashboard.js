@@ -183,7 +183,7 @@
 
         <div class="section slide-up" style="--delay:220ms">
           <div class="section-head">
-            <div class="section-title">Your week</div>
+            <div class="section-title">This week's availabilities</div>
             <div class="section-aside"><span id="monthCount">${monthCount}</span> / 4 this month</div>
           </div>
           <div class="week-grid" id="weekGrid">
@@ -194,7 +194,7 @@
                 <button class="day-card${isSelected ? ' selected' : ''}" data-date="${iso}">
                   <span class="day-name">${dayNames[d.getDay()]}</span>
                   <span class="day-num">${d.getDate()}</span>
-                  <span class="day-status">${isSelected ? 'Free' : '—'}</span>
+                  <span class="day-status">${isSelected ? 'Available' : '—'}</span>
                 </button>
               `;
             }).join('')}
@@ -203,7 +203,7 @@
 
         <div class="section slide-up" style="--delay:320ms">
           <div class="section-head">
-            <div class="section-title">Where you eat</div>
+            <div class="section-title">How far you'll travel</div>
           </div>
           <div class="map-wrap" id="mapWrap"></div>
           <div class="radius-selector" id="radiusSelector">
@@ -240,7 +240,7 @@
           return;
         }
         btn.classList.toggle('selected');
-        if (statusEl) statusEl.textContent = btn.classList.contains('selected') ? 'Free' : '—';
+        if (statusEl) statusEl.textContent = btn.classList.contains('selected') ? 'Available' : '—';
         try {
           const res = await db.member.toggleAvailability(date);
           if (res.ok) {
@@ -256,7 +256,7 @@
         } catch (err) {
           console.error('Toggle error:', err);
           btn.classList.toggle('selected');
-          if (statusEl) statusEl.textContent = btn.classList.contains('selected') ? 'Free' : '—';
+          if (statusEl) statusEl.textContent = btn.classList.contains('selected') ? 'Available' : '—';
         }
       });
     });
