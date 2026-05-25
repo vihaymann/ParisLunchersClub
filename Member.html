@@ -407,6 +407,129 @@ input:-webkit-autofill:focus {
   transition: background-color 9999s ease-out 0s, color 9999s ease-out 0s;
 }
 
+/* ============ Recommend / Invite ============ */
+.invite-form {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-top: 20px;
+}
+.invite-form .full { grid-column: 1 / -1; }
+.invite-field {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.invite-field label {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted);
+}
+.invite-field input {
+  background: var(--field);
+  border: 1px solid var(--field-line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.invite-field input:focus {
+  border-color: var(--accent);
+}
+.invite-field input::placeholder {
+  color: var(--muted); opacity: 0.6;
+}
+.btn-generate {
+  grid-column: 1 / -1;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 14px;
+  margin-top: 4px;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+  transition: opacity 0.2s;
+}
+.btn-generate:hover { opacity: 0.88; }
+.btn-generate:disabled { opacity: 0.4; cursor: default !important; }
+
+.invite-link-box {
+  background: var(--field);
+  border: 1px solid var(--ok);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  display: none;
+}
+.invite-link-box.visible { display: block; }
+.invite-link-box .label {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ok);
+  margin-bottom: 8px;
+}
+.invite-link-box .link-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.invite-link-box .link-url {
+  flex: 1;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted-2);
+  word-break: break-all;
+  line-height: 1.4;
+}
+.btn-copy {
+  background: none;
+  border: 1px solid var(--field-line);
+  border-radius: 6px;
+  color: var(--muted-2);
+  font-family: var(--sans);
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  white-space: nowrap;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-copy:hover { color: var(--ink); border-color: var(--muted); }
+
+.invite-list { margin-top: 28px; }
+.invite-list .section-head { margin-bottom: 0; }
+
+.status-pill {
+  display: inline-block;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.status-pill.pending {
+  color: var(--warn);
+  background: color-mix(in oklch, var(--warn) 12%, transparent);
+}
+.status-pill.submitted {
+  color: var(--muted-2);
+  background: color-mix(in oklch, var(--muted-2) 12%, transparent);
+}
+.status-pill.accepted {
+  color: var(--ok);
+  background: color-mix(in oklch, var(--ok) 12%, transparent);
+}
+.status-pill.onboarded {
+  color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 12%, transparent);
+}
+
+.invite-error {
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 8px;
+}
+
 /* ============ Responsive: sidebar → bottom bar on mobile ============ */
 @media (max-width: 768px) {
   .app-shell {
@@ -478,6 +601,10 @@ input:-webkit-autofill:focus {
       <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
       <span class="label-text">Contacts</span>
     </button>
+    <button class="rail-item" data-page="recommend">
+      <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span>
+      <span class="label-text">Recommend</span>
+    </button>
     <button class="rail-item" data-page="profil">
       <span class="glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21v-2a8 8 0 00-16 0v2"/></svg></span>
       <span class="label-text">Profile</span>
@@ -496,6 +623,8 @@ input:-webkit-autofill:focus {
     </section>
 
     <section class="page" data-page="carnet" id="carnetPage"></section>
+
+    <section class="page" data-page="recommend" id="recommendPage"></section>
 
     <section class="page" data-page="profil" id="profilPage"></section>
   </main>

@@ -211,6 +211,16 @@
       tbl.innerHTML = `<div class="empty">No applications match.</div>`;
       return;
     }
+
+    // Build inviter name lookup for referred applications
+    const inviterNames = {};
+    rows.forEach(a => {
+      if (a.invitedBy) {
+        const inviter = allApps.find(x => x.id === a.invitedBy);
+        inviterNames[a.id] = inviter ? `${inviter.data.firstName} ${inviter.data.lastName}` : 'a member';
+      }
+    });
+
     const now = Date.now();
     tbl.innerHTML = `
       <table class="tbl">
@@ -221,13 +231,16 @@
           ${rows.map(a => {
             const isNew = (now - new Date(a.appliedAt).getTime()) < 7 * 86400000;
             const d = a.data;
+            const refCell = inviterNames[a.id]
+              ? `<span style="color:var(--ok)">Referred by ${escape(inviterNames[a.id])}</span>`
+              : (d.refName ? escape(d.refName) : '<span style="opacity:0.45">none</span>');
             return `
               <tr data-id="${a.id}" class="${isNew ? 'is-new' : ''}">
                 <td class="date">${formatDate(a.appliedAt)}</td>
                 <td class="name">${escape(d.firstName)} ${escape(d.lastName)}</td>
                 <td class="muted">${escape(d.city || '—')}</td>
                 <td class="muted">${escape(d.profession || '')}${d.employer ? ' · ' + escape(d.employer) : ''}</td>
-                <td class="muted">${d.refName ? escape(d.refName) : '<span style="opacity:0.45">none</span>'}</td>
+                <td class="muted">${refCell}</td>
                 <td class="why-cell">${d.why ? '"' + escape(d.why) + '"' : ''}</td>
                 <td>${statusPill(a.status)}</td>
               </tr>
@@ -640,6 +653,37 @@
     const dob = (d.dobDay && d.dobMonth && d.dobYear) ? `${d.dobDay}/${d.dobMonth}/${d.dobYear}` : '—';
     const planKey = await db.plans.get(app.id);
 
+    // Resolve inviter name if this is a referred application
+    let referralHtml;
+    if (app.invitedBy) {
+      const inviter = allApps.find(a => a.id === app.invitedBy);
+      const inviterName = inviter ? `${inviter.data.firstName} ${inviter.data.lastName}` : 'a member';
+      referralHtml = `<span style="color:var(--ok)">Referred by ${escape(inviterName)}</span>`;
+    } else {
+      referralHtml = d.refName
+        ? `${escape(d.refName)}${d.refRelation ? ' · ' + escape(d.refRelation) : ''}`
+        : '<span style="opacity:0.45">none</span>';
+    }
+
+    // Fetch invite quota for accepted members
+    let quotaHtml = '';
+    if (app.status === 'accepted') {
+      const currentQuota = await db.invites.getQuota(app.id);
+      quotaHtml = `
+        <div class="drawer-row">
+          <div class="k">Invites</div>
+          <div class="v" style="display:flex; align-items:center; gap:8px;">
+            <input type="number" id="quotaInput" min="0" max="99" value="${currentQuota}"
+              style="width:52px; background:var(--field); border:1px solid var(--field-line);
+                     color:var(--ink); padding:4px 8px; border-radius:4px; font-size:13px; font-family:var(--sans);">
+            <button id="quotaSave" style="background:none; border:1px solid var(--field-line);
+                    color:var(--muted-2); padding:4px 10px; border-radius:4px; font-size:12px;
+                    letter-spacing:0.06em; cursor:pointer; font-family:var(--sans);">Save</button>
+            <span id="quotaFeedback" style="font-size:12px; color:var(--muted);"></span>
+          </div>
+        </div>`;
+    }
+
     drawer.innerHTML = `
       <div class="drawer-head">
         <div>
@@ -658,9 +702,10 @@
         ${row('Work',    `${escape(d.profession || '')}${d.employer ? ' · ' + escape(d.employer) : ''}` || '—')}
         ${row('LinkedIn', d.linkedin ? `<a href="https://${cleanUrl(d.linkedin)}" target="_blank" rel="noopener">${escape(d.linkedin)}</a>` : '—')}
         ${row('Instagram', d.instagram ? escape(d.instagram) : '—')}
-        ${row('Referral',  d.refName ? `${escape(d.refName)}${d.refRelation ? ' · ' + escape(d.refRelation) : ''}` : '<span style="opacity:0.45">none</span>')}
+        ${row('Referral', referralHtml)}
         ${row('Why', d.why ? `<span style="font-family:var(--serif); font-style:italic; color: var(--muted-2);">"${escape(d.why)}"</span>` : '—')}
         ${app.status === 'accepted' ? row('Plan', `${db.PLANS[planKey].label} · €${db.PLANS[planKey].monthly}/mo`) : ''}
+        ${quotaHtml}
       </div>
       <div class="drawer-actions">
         <button class="btn accept"  data-action="accepted">Accept</button>
@@ -669,6 +714,39 @@
       </div>
     `;
     drawer.querySelector('#drawerClose').addEventListener('click', closeDrawer);
+
+    // Wire invite quota save
+    const quotaSaveBtn = drawer.querySelector('#quotaSave');
+    if (quotaSaveBtn) {
+      quotaSaveBtn.addEventListener('click', async () => {
+        const input = drawer.querySelector('#quotaInput');
+        const feedback = drawer.querySelector('#quotaFeedback');
+        const val = parseInt(input.value, 10);
+        if (isNaN(val) || val < 0) {
+          feedback.textContent = 'Invalid number';
+          feedback.style.color = 'var(--danger)';
+          return;
+        }
+        try {
+          const res = await db.invites.setQuota(app.id, val);
+          if (res.ok) {
+            feedback.textContent = `Saved (${res.used} used)`;
+            feedback.style.color = 'var(--ok)';
+          } else if (res.error === 'quota_below_used') {
+            feedback.textContent = `Can't go below ${res.used} (already used)`;
+            feedback.style.color = 'var(--danger)';
+          } else {
+            feedback.textContent = res.error;
+            feedback.style.color = 'var(--danger)';
+          }
+        } catch (err) {
+          feedback.textContent = 'Error saving';
+          feedback.style.color = 'var(--danger)';
+        }
+        setTimeout(() => { if (feedback) feedback.textContent = ''; }, 3000);
+      });
+    }
+
     drawer.querySelectorAll('.drawer-actions .btn').forEach(b => {
       b.addEventListener('click', async () => {
         const newStatus = b.dataset.action;

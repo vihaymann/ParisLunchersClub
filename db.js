@@ -25,6 +25,8 @@
       appliedAt: row.applied_at,
       decidedAt: row.decided_at,
       refCode: row.ref_code,
+      invitedBy: row.invited_by || null,
+      inviteToken: row.invite_token || null,
       data: {
         firstName: row.first_name,
         lastName: row.last_name,
@@ -532,6 +534,68 @@
     }
   };
 
+  /* ---------- Invites (staff-facing) ---------- */
+  const invites = {
+    async getQuota(memberId) {
+      const { data } = await sb.from('member_invite_quotas')
+        .select('quota')
+        .eq('member_id', memberId)
+        .maybeSingle();
+      return data?.quota ?? 0;
+    },
+    async setQuota(memberId, quota) {
+      const { data, error } = await sb.rpc('staff_set_invite_quota', {
+        p_member_id: memberId,
+        p_quota: quota
+      });
+      if (error) throw error;
+      return data;
+    }
+  };
+
+  /* ---------- Member Invites (member + prospect facing) ---------- */
+  const memberInvites = {
+    async getMyInvites() {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('get_member_invites', {
+        p_ref_code: s.refCode, p_password: s.password
+      });
+      if (error) throw error;
+      return data;
+    },
+    async createInvite(first, last, email) {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('create_member_invite', {
+        p_ref_code: s.refCode, p_password: s.password,
+        p_first: first, p_last: last, p_email: email
+      });
+      if (error) throw error;
+      return data;
+    },
+    async validateToken(token) {
+      const { data, error } = await sb.rpc('validate_invite_token', {
+        p_token: token
+      });
+      if (error) throw error;
+      return data;
+    },
+    async submitInvited(token, formData) {
+      const { data, error } = await sb.rpc('submit_invited_application', {
+        p_token: token,
+        p_phone: formData.phone || '',
+        p_country_code: formData.countryCode || '+33',
+        p_city: formData.city || 'Paris',
+        p_profession: formData.profession || '',
+        p_employer: formData.employer || '',
+        p_why: formData.why || ''
+      });
+      if (error) throw error;
+      return data;
+    }
+  };
+
   /* ---------- Public surface ---------- */
   window.TPLC = {
     applications,
@@ -544,6 +608,8 @@
     onboarding,
     memberSession,
     member,
+    invites,
+    memberInvites,
     resetAll() {}
   };
 })();

@@ -1071,8 +1071,10 @@ footer.foot {
 const _params = new URLSearchParams(window.location.search);
 const MODE = _params.get('mode');
 const isOnboarding = MODE === 'onboard';
+const isInvite = MODE === 'invite';
 const _prefillRef = _params.get('ref') || '';
 const _prefillPwd = _params.get('pwd') || '';
+const _inviteToken = _params.get('token') || '';
 
 /* ============ Step definitions ============ */
 
@@ -1102,7 +1104,15 @@ const OB_STEPS = [
   { key: 'ob_guests',     name: 'Dream table' }
 ];
 
-const STEPS = isOnboarding ? OB_STEPS : APP_STEPS;
+const INVITE_STEPS = [
+  { key: 'inv_welcome', name: 'Welcome' },
+  { key: 'phone',       name: 'Phone' },
+  { key: 'work',        name: 'Work' },
+  { key: 'why',         name: 'Why' },
+  { key: 'inv_review',  name: 'Review' }
+];
+
+const STEPS = isOnboarding ? OB_STEPS : isInvite ? INVITE_STEPS : APP_STEPS;
 
 const state = {
   step: 0,
@@ -1122,6 +1132,18 @@ const state = {
     dreamGuest1: '',
     dreamGuest2: '',
     dreamGuest3: ''
+  } : isInvite ? {
+    inviteToken: _inviteToken,
+    inviterName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    countryCode: '+33',
+    phone: '',
+    city: 'Paris',
+    profession: '',
+    employer: '',
+    why: ''
   } : {
     countryCode: '+33',
     phone: '',
@@ -1428,6 +1450,61 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+/* ============ Invite step builders ============ */
+
+function invWelcome() {
+  const name = state.data.inviterName ? escapeHtml(state.data.inviterName) : 'A member';
+  return `
+    <div class="eyebrow">You've been invited</div>
+    <h2 class="prompt">${name} thinks you'd make a great <span class="italic">luncher</span>.</h2>
+    <p class="help">Before we can seat you, we just need a few details. Won't take long.</p>
+    <div class="fields">
+      <div class="field" style="pointer-events:none; opacity:0.65">
+        <div class="field-body">
+          <label>Name</label>
+          <div style="font-size:16px; font-weight:500; padding:2px 0; color:var(--ink)">${escapeHtml(state.data.firstName)} ${escapeHtml(state.data.lastName)}</div>
+        </div>
+      </div>
+      <div class="field" style="pointer-events:none; opacity:0.65">
+        <div class="field-body">
+          <label>Email</label>
+          <div style="font-size:16px; font-weight:500; padding:2px 0; color:var(--ink)">${escapeHtml(state.data.email)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function invReview() {
+  const d = state.data;
+  const fullName = [d.firstName, d.lastName].filter(Boolean).join(' ');
+  const phone = d.phone ? d.countryCode + ' ' + d.phone : '';
+  const work = [d.profession, d.employer].filter(Boolean).join(' · ');
+
+  const rows = [
+    { key: 'Name',    val: fullName,   step: 0 },
+    { key: 'Email',   val: d.email,    step: 0 },
+    { key: 'Phone',   val: phone,      step: 1 },
+    { key: 'Work',    val: work,       step: 2 },
+    { key: 'Why',     val: d.why,      step: 3 }
+  ];
+
+  return `
+    <div class="eyebrow">Last look</div>
+    <h2 class="prompt">A quick <span class="italic">review</span>.</h2>
+    <p class="help">Edit anything that's not quite right.</p>
+    <div class="review-list">
+      ${rows.map(r => `
+        <div class="review-row">
+          <span class="key">${r.key}</span>
+          <span class="val ${r.val ? '' : 'empty'}">${r.val ? escapeHtml(r.val) : 'not provided'}</span>
+          <button type="button" class="edit" data-edit-step="${r.step}">Edit</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 /* ============ Onboarding step builders ============ */
 
 function obLogin() {
@@ -1664,6 +1741,9 @@ function buildStepHtml(idx) {
     case 'referral': return stepReferral();
     case 'why':      return stepWhy();
     case 'review':   return stepReview();
+    /* Invite steps */
+    case 'inv_welcome':   return invWelcome();
+    case 'inv_review':    return invReview();
     /* Onboarding steps */
     case 'ob_login':      return obLogin();
     case 'ob_seeking':    return obSeeking();
@@ -1710,6 +1790,8 @@ function render() {
     nextLabel.textContent = 'Send application';
   } else if (isOnboarding && STEPS[idx].key === 'ob_login') {
     nextLabel.textContent = 'Sign in';
+  } else if (isInvite && idx === 0) {
+    nextLabel.textContent = 'Get started';
   } else {
     nextLabel.textContent = 'Continue';
   }
@@ -1727,9 +1809,9 @@ function render() {
 function hintFor(idx) {
   const key = STEPS[idx].key;
   if (isOnboarding) return '';
-  if (key === 'referral') return state.data.refName ? '' : 'Optional · but rare to get in without';
   if (key === 'why') return `${(state.data.why || '').length} / 300`;
-  if (key === 'review') return '';
+  if (key === 'referral') return state.data.refName ? '' : 'Optional · but rare to get in without';
+  if (key === 'review' || key === 'inv_review' || key === 'inv_welcome') return '';
   return 'Press Enter to continue';
 }
 
@@ -1956,7 +2038,7 @@ function wireStep(idx) {
     wireCityStep();
   }
 
-  if (key === 'review') {
+  if (key === 'review' || key === 'inv_review') {
     wrap.querySelectorAll('.edit').forEach(btn => {
       btn.addEventListener('click', () => {
         state.step = parseInt(btn.dataset.editStep, 10);
@@ -2052,6 +2134,9 @@ function isStepValid(idx) {
     case 'referral': return true;  // optional
     case 'why':      return d.why.trim().length >= 12 && d.why.length <= 300;
     case 'review':   return true;
+    /* Invite validation */
+    case 'inv_welcome':   return true;
+    case 'inv_review':    return true;
     /* Onboarding validation */
     case 'ob_login':      return d.refCode.trim().length >= 4 && d.tempPassword.trim().length >= 4;
     case 'ob_seeking':    return (d.seeking || []).length >= 1;
@@ -2100,6 +2185,7 @@ async function goNext() {
   /* Last step: submit */
   if (state.step === STEPS.length - 1) {
     if (isOnboarding) return submitOnboarding();
+    if (isInvite) return submitInvited();
     return submit();
   }
 
@@ -2218,6 +2304,46 @@ async function submitOnboarding() {
   stepNameEl.textContent = 'Welcome';
 }
 
+async function submitInvited() {
+  nextBtn.dataset.state = 'loading';
+  nextLabel.textContent = 'Sending';
+  nextArrow.style.display = 'none';
+  if (!nextBtn.querySelector('.dots')) {
+    const d = document.createElement('span');
+    d.className = 'dots';
+    d.innerHTML = '<span></span><span></span><span></span>';
+    nextBtn.appendChild(d);
+  }
+  backBtn.disabled = true;
+
+  setTimeout(() => { nextLabel.textContent = 'Reviewing your details'; }, 1200);
+
+  try {
+    const res = await window.TPLC.memberInvites.submitInvited(state.data.inviteToken, state.data);
+    if (!res.ok) throw new Error(res.error || 'submit_failed');
+  } catch (e) {
+    console.error('Invite submit failed:', e);
+  }
+
+  setTimeout(() => {
+    wrap.innerHTML = `
+      <div class="step active done">
+        <div class="seal">L</div>
+        <h2>Application <span class="italic">received</span>.</h2>
+        <p>We'll review your profile within 72 hours.</p>
+        <p>If we say yes, we'll send you everything you need to book your first lunch.</p>
+        <div class="next-step">See you at the table.</div>
+      </div>
+    `;
+    document.getElementById('stepNav').style.display = 'none';
+    document.getElementById('progress').style.opacity = '0.4';
+    prevArrowBtn.disabled = true;
+    nextArrowBtn.disabled = true;
+    stepLabel.textContent = 'Complete';
+    stepNameEl.textContent = 'Sent';
+  }, 2400);
+}
+
 function generateRefCode() {
   const letters = 'ACDEFGHJKLMNPQRSTUVWXY';
   const pick = (s) => s[Math.floor(Math.random() * s.length)];
@@ -2228,7 +2354,47 @@ function generateRefCode() {
 }
 
 /* ============ Boot ============ */
-if (isOnboarding) {
+if (isInvite) {
+  document.title = "You're invited | The Paris Lunchers Club";
+  document.querySelector('.bar .left a').textContent = '← Home';
+  document.querySelector('.bar .left a').href = 'The Paris Lunchers Club.html';
+  const rightLink = document.querySelector('.bar .right a');
+  if (rightLink) rightLink.style.display = 'none';
+
+  // Validate token before showing the form
+  (async () => {
+    try {
+      const res = await window.TPLC.memberInvites.validateToken(_inviteToken);
+      if (!res.ok) {
+        wrap.innerHTML = `
+          <div class="step active done">
+            <h2>This link is no longer <span class="italic">valid</span>.</h2>
+            <p>The invitation may have expired or already been used.</p>
+            <a href="Apply.html" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;margin-top:24px;text-decoration:none;">Apply instead <span>&rarr;</span></a>
+          </div>
+        `;
+        document.getElementById('stepNav').style.display = 'none';
+        document.getElementById('progress').style.display = 'none';
+        return;
+      }
+      state.data.firstName = res.firstName;
+      state.data.lastName = res.lastName;
+      state.data.email = res.email;
+      state.data.inviterName = res.inviterName;
+      render();
+    } catch (e) {
+      console.error('Token validation error:', e);
+      wrap.innerHTML = `
+        <div class="step active done">
+          <h2>Something went <span class="italic">wrong</span>.</h2>
+          <p>Please try again or contact the person who invited you.</p>
+        </div>
+      `;
+      document.getElementById('stepNav').style.display = 'none';
+      document.getElementById('progress').style.display = 'none';
+    }
+  })();
+} else if (isOnboarding) {
   document.title = 'Onboarding | The Paris Lunchers Club';
   document.querySelector('.bar .left a').textContent = '← Home';
   document.querySelector('.bar .left a').href = 'The Paris Lunchers Club.html';

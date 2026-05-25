@@ -36,6 +36,7 @@
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === name));
     if (name === 'home') renderHome();
     if (name === 'carnet') renderCarnet();
+    if (name === 'recommend') renderRecommend();
     if (name === 'profil') renderProfil();
   }
 
@@ -387,6 +388,183 @@
         <div class="empty-card"><p>Something went wrong. Please try again.</p></div>
       `;
     }
+  }
+
+  /* ============================================================
+     RECOMMEND PAGE (invitations)
+     ============================================================ */
+  async function renderRecommend() {
+    const container = document.getElementById('recommendPage');
+    container.innerHTML = `<div class="loading">Loading...</div>`;
+
+    try {
+      const res = await db.memberInvites.getMyInvites();
+      if (!res.ok) {
+        container.innerHTML = `<div class="empty-card"><p>Something went wrong. Please try again.</p></div>`;
+        return;
+      }
+
+      const { quota, sent, remaining, invites } = res;
+
+      if (quota === 0) {
+        container.innerHTML = `
+          <div class="greeting fade-in">
+            <div class="eyebrow">Recommend</div>
+            <h1>Invite someone to the <span class="italic">table</span>.</h1>
+          </div>
+          <div class="empty-card fade-in" style="animation-delay:80ms; margin-top:24px;">
+            <p>You don't have any invitations yet.</p>
+            <p class="muted">When we open invite slots for you, they'll appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="greeting fade-in">
+          <div class="eyebrow">Recommend</div>
+          <h1>Invite someone to the <span class="italic">table</span>.</h1>
+        </div>
+
+        <div class="stat-cards fade-in" style="animation-delay:80ms">
+          <div class="stat-card">
+            <div class="number">${remaining}<span class="small">/${quota}</span></div>
+            <div class="label">Invitations remaining</div>
+          </div>
+          <div class="stat-card">
+            <div class="number">${sent}</div>
+            <div class="label">Sent</div>
+          </div>
+        </div>
+
+        ${remaining > 0 ? `
+        <div class="section fade-in" style="animation-delay:160ms">
+          <div class="section-head">
+            <div class="eyebrow">New invitation</div>
+          </div>
+          <p class="help" style="margin-top:-8px;margin-bottom:4px;">Enter your friend's details. We'll generate a personal link you can share.</p>
+          <form class="invite-form" id="inviteForm">
+            <div class="invite-field">
+              <label>First name</label>
+              <input type="text" id="invFirst" placeholder="Sophie" required autocomplete="off" />
+            </div>
+            <div class="invite-field">
+              <label>Last name</label>
+              <input type="text" id="invLast" placeholder="Dupont" required autocomplete="off" />
+            </div>
+            <div class="invite-field full">
+              <label>Email</label>
+              <input type="email" id="invEmail" placeholder="sophie@example.com" required autocomplete="off" />
+            </div>
+            <button type="submit" class="btn-generate" id="invSubmit">Generate invite link</button>
+          </form>
+          <div class="invite-error" id="invError"></div>
+          <div class="invite-link-box" id="invLinkBox">
+            <div class="label">Invite link ready</div>
+            <div class="link-row">
+              <div class="link-url" id="invLinkUrl"></div>
+              <button class="btn-copy" id="invCopy">Copy</button>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
+        ${invites.length > 0 ? `
+        <div class="invite-list fade-in" style="animation-delay:${remaining > 0 ? 240 : 160}ms">
+          <div class="section-head">
+            <div class="eyebrow">Your invitations</div>
+          </div>
+          ${invites.map(inv => inviteCard(inv)).join('')}
+        </div>
+        ` : ''}
+      `;
+
+      // Wire form
+      wireInviteForm();
+    } catch (err) {
+      console.error('Recommend load error:', err);
+      container.innerHTML = `<div class="empty-card"><p>Something went wrong. Please try again.</p></div>`;
+    }
+  }
+
+  function inviteCard(inv) {
+    const statusLabels = {
+      pending: 'Link sent',
+      submitted: 'Applied',
+      accepted: 'Accepted',
+      onboarded: 'Onboarded',
+      expired: 'Expired'
+    };
+    return `
+      <div class="connection-card">
+        <div class="avatar">${esc(initials(inv.firstName, inv.lastName))}</div>
+        <div class="info">
+          <div class="name">${esc(inv.firstName)} ${esc(inv.lastName)}</div>
+          <div class="meta">${esc(inv.email)}</div>
+        </div>
+        <span class="status-pill ${inv.status}">${statusLabels[inv.status] || inv.status}</span>
+      </div>
+    `;
+  }
+
+  function wireInviteForm() {
+    const form = document.getElementById('inviteForm');
+    if (!form) return;
+    const errorEl = document.getElementById('invError');
+    const linkBox = document.getElementById('invLinkBox');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.textContent = '';
+      linkBox.classList.remove('visible');
+
+      const first = document.getElementById('invFirst').value.trim();
+      const last = document.getElementById('invLast').value.trim();
+      const email = document.getElementById('invEmail').value.trim();
+      if (!first || !last || !email) return;
+
+      const btn = document.getElementById('invSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      try {
+        const res = await db.memberInvites.createInvite(first, last, email);
+        if (res.ok) {
+          const baseUrl = window.location.origin + window.location.pathname.replace('Member.html', 'Apply.html');
+          const inviteUrl = `${baseUrl}?mode=invite&token=${res.token}`;
+          document.getElementById('invLinkUrl').textContent = inviteUrl;
+          linkBox.classList.add('visible');
+
+          // Wire copy
+          document.getElementById('invCopy').addEventListener('click', () => {
+            navigator.clipboard.writeText(inviteUrl).then(() => {
+              const copyBtn = document.getElementById('invCopy');
+              copyBtn.textContent = 'Copied';
+              setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1400);
+            });
+          });
+
+          // Clear form
+          form.reset();
+          // Refresh the full page after a brief delay to update counts
+          setTimeout(() => renderRecommend(), 800);
+        } else {
+          const msgs = {
+            quota_exhausted: 'All your invitations have been used.',
+            email_exists: 'This person already has an application.',
+            already_invited: 'You have already invited this email.',
+            invalid: 'Session expired. Please sign in again.'
+          };
+          errorEl.textContent = msgs[res.error] || 'Something went wrong.';
+        }
+      } catch (err) {
+        console.error('Invite create error:', err);
+        errorEl.textContent = 'Something went wrong. Please try again.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generate invite link';
+      }
+    });
   }
 
   /* ============================================================
