@@ -397,7 +397,9 @@
       attributionControl: false,
       dragging: true,
       scrollWheelZoom: false,
-      doubleClickZoom: false
+      doubleClickZoom: false,
+      zoomSnap: 0.25,
+      zoomDelta: 0.25
     });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
@@ -419,7 +421,9 @@
 
     // Ensure Leaflet knows the container size now that polygons are loaded
     map.invalidateSize();
-    map.fitBounds(arrLayer.getBounds(), { padding: [12, 12] });
+    map.fitBounds(arrLayer.getBounds(), { padding: [0, 0] });
+    // Zoom in ~10% past the natural fit so Paris fills more of the frame
+    map.setZoom(map.getZoom() + 0.5);
 
     // Number labels at centroids
     arrLabels.forEach(m => map.removeLayer(m));
