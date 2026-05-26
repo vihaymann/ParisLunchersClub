@@ -370,6 +370,41 @@ body {
 }
 .map-wrap .leaflet-control-attribution { display: none; }
 
+/* Custom zoom +/− buttons */
+.map-wrap .leaflet-control-zoom {
+  border: 0 !important;
+  box-shadow: none !important;
+  margin: 12px !important;
+}
+.map-wrap .leaflet-control-zoom a {
+  width: 30px; height: 30px;
+  line-height: 28px;
+  background: color-mix(in oklch, var(--bg) 70%, var(--field)) !important;
+  border: 1px solid color-mix(in oklch, var(--ink) 12%, var(--line)) !important;
+  color: var(--ink) !important;
+  font-family: var(--sans) !important;
+  font-size: 18px !important;
+  font-weight: 400 !important;
+  text-decoration: none !important;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
+}
+.map-wrap .leaflet-control-zoom a:first-child {
+  border-radius: 6px 6px 0 0 !important;
+}
+.map-wrap .leaflet-control-zoom a:last-child {
+  border-radius: 0 0 6px 6px !important;
+  border-top: 0 !important;
+}
+.map-wrap .leaflet-control-zoom a:hover {
+  background: color-mix(in oklch, var(--ink) 8%, var(--field)) !important;
+  border-color: color-mix(in oklch, var(--ink) 24%, var(--line)) !important;
+}
+.map-wrap .leaflet-control-zoom a.leaflet-disabled {
+  opacity: 0.35;
+  cursor: default !important;
+}
+
 /* Arrondissement number labels (Leaflet divIcons) */
 .arr-label {
   font-family: var(--sans);

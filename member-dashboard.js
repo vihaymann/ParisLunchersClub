@@ -393,7 +393,7 @@
     map = L.map(wrap, {
       center: [48.8566, 2.3522],
       zoom: 12,
-      zoomControl: false,
+      zoomControl: true,
       attributionControl: false,
       dragging: true,
       scrollWheelZoom: false,
@@ -401,6 +401,7 @@
       zoomSnap: 0.25,
       zoomDelta: 0.25
     });
+    map.zoomControl.setPosition('topright');
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
     const data = await loadArrGeojson();
