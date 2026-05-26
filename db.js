@@ -512,6 +512,15 @@
       if (error) throw error;
       return data;
     },
+    async nextLunch() {
+      const s = memberSession.get();
+      if (!s) return { ok: false, error: 'no_session' };
+      const { data, error } = await sb.rpc('get_member_next_lunch', {
+        p_ref_code: s.refCode, p_password: s.password
+      });
+      if (error) throw error;
+      return data;
+    },
     async toggleAvailability(date) {
       const s = memberSession.get();
       if (!s) return { ok: false, error: 'no_session' };
@@ -530,13 +539,53 @@
       if (error) throw error;
       return data;
     },
-    async setPreferences(radius, lat, lng) {
+    async setPreferences(arrondissements) {
       const s = memberSession.get();
       if (!s) return { ok: false, error: 'no_session' };
       const { data, error } = await sb.rpc('set_member_preferences', {
         p_ref_code: s.refCode, p_password: s.password,
-        p_radius: radius, p_lat: lat, p_lng: lng
+        p_arrondissements: arrondissements || []
       });
+      if (error) throw error;
+      return data;
+    }
+  };
+
+  /* ---------- Matching (staff-facing) ---------- */
+  const matching = {
+    async candidates(date) {
+      const { data, error } = await sb.rpc('find_match_candidates', { p_date: date });
+      if (error) throw error;
+      return data || [];
+    },
+    async runFor(date) {
+      const { data, error } = await sb.rpc('propose_matches_for_date', { p_date: date });
+      if (error) throw error;
+      return data || [];
+    },
+    async listProposed(filters = {}) {
+      let q = sb.from('proposed_lunches')
+        .select('*')
+        .order('date', { ascending: true })
+        .order('score', { ascending: false });
+      if (filters.status) q = q.eq('status', filters.status);
+      if (filters.date)   q = q.eq('date', filters.date);
+      if (filters.from)   q = q.gte('date', filters.from);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data || [];
+    },
+    async confirm(proposedId, restaurant, neighborhood) {
+      const { data, error } = await sb.rpc('confirm_proposed_lunch', {
+        p_proposed_id: proposedId,
+        p_restaurant: restaurant || '',
+        p_neighborhood: neighborhood || ''
+      });
+      if (error) throw error;
+      return data;
+    },
+    async decline(proposedId) {
+      const { data, error } = await sb.rpc('decline_proposed_lunch', { p_proposed_id: proposedId });
       if (error) throw error;
       return data;
     }
@@ -617,6 +666,7 @@
     memberSession,
     member,
     invites,
+    matching,
     memberInvites,
     resetAll() {}
   };

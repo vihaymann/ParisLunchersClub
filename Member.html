@@ -353,7 +353,7 @@ body {
 /* ============ Today — Map ============ */
 .map-wrap {
   width: 100%;
-  height: 180px;
+  height: 320px;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -370,29 +370,53 @@ body {
 }
 .map-wrap .leaflet-control-attribution { display: none; }
 
-.radius-selector {
-  display: flex; gap: 8px;
-  margin-top: 12px;
+/* Arrondissement number labels (Leaflet divIcons) */
+.arr-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.75), 0 0 4px rgba(0,0,0,0.6);
+  pointer-events: none;
 }
-.radius-btn {
-  flex: 1;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  color: var(--muted);
+
+/* Selected-arrondissement chips below the map */
+.arr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  min-height: 28px;
+  align-items: center;
+}
+.arr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in oklch, var(--ok) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ok) 35%, var(--line));
+  color: var(--ok);
   font-family: var(--sans);
   font-size: 12px;
   font-weight: 500;
-  padding: 10px;
-  text-align: center;
+  padding: 4px 10px;
+  border-radius: 14px;
   cursor: url("assets/fork-cursor.png") 32 4, pointer !important;
-  transition: all 0.2s ease;
+  transition: background 0.18s ease;
 }
-.radius-btn:hover { border-color: color-mix(in oklch, var(--ink) 20%, var(--line)); color: var(--ink); }
-.radius-btn.active {
-  border-color: var(--ink);
-  color: var(--ink);
-  background: color-mix(in oklch, var(--ink) 4%, transparent);
+.arr-chip:hover { background: color-mix(in oklch, var(--ok) 18%, transparent); }
+.arr-chip .x {
+  color: color-mix(in oklch, var(--ok) 65%, var(--muted));
+  font-size: 14px;
+  line-height: 1;
+}
+.arr-chip-empty {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 /* ============ Room — Connection cards ============ */

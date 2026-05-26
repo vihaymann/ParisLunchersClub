@@ -7,7 +7,6 @@
   const db = window.TPLC;
   let dashData = null;
   let map = null;
-  let radiusCircle = null;
 
   /* ---------- Auth gate ---------- */
   async function checkAuth() {
@@ -128,15 +127,52 @@
     return a.slice(0, n).join(' · ');
   }
 
+  /* ---------- Next lunch block ---------- */
+  function renderNextLunchBlock(nextRes) {
+    if (!nextRes || !nextRes.ok || !nextRes.lunch) {
+      return `<p class="next-lunch-empty">No lunch this week. Set your days below.</p>`;
+    }
+    const ln = nextRes.lunch;
+    const d = new Date(ln.date);
+    const when = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const neighborhood = ln.neighborhood ? ln.neighborhood : '';
+    const whenLine = [when, time, neighborhood].filter(Boolean).join(' · ');
+    const initials = ((ln.partnerFirstName || '')[0] || '') + ((ln.partnerLastName || '')[0] || '');
+    const partnerName = ln.reveal ? `${ln.partnerFirstName} ${ln.partnerLastName}` : ln.partnerFirstName;
+    const editorial = ln.reveal
+      ? `Reveal: ${esc(ln.partnerFirstName)} has been waiting for the right table.`
+      : `One member, hand-paired. Their name appears 24 hours before you sit down.`;
+
+    return `
+      <div class="next-lunch">
+        <div class="restaurant">${esc(ln.restaurant || '—')}</div>
+        <div class="when">${esc(whenLine)}</div>
+        <div class="with">
+          <div class="avatar ${avatarClass(ln.partnerFirstName, ln.partnerLastName)}"
+               style="${ln.reveal ? '' : 'filter: blur(7px);'}">
+            ${esc(initials)}
+          </div>
+          <div>
+            <div class="name">${ln.reveal ? esc(partnerName) : esc(partnerName)}</div>
+            <div class="reveal">${ln.reveal ? 'Revealed' : 'Revealed 24 hours before'}</div>
+          </div>
+        </div>
+        <p class="editorial">${editorial}</p>
+      </div>
+    `;
+  }
+
   /* ============================================================
      TODAY — next lunch / your week / where you eat
      ============================================================ */
   async function renderToday() {
     const container = document.getElementById('todayPage');
     try {
-      const [dashRes, availRes] = await Promise.all([
+      const [dashRes, availRes, nextRes] = await Promise.all([
         db.member.dashboard(),
-        db.member.getAvailability().catch(() => ({ ok: false }))
+        db.member.getAvailability().catch(() => ({ ok: false })),
+        db.member.nextLunch().catch(() => ({ ok: false }))
       ]);
 
       if (!dashRes.ok) { db.memberSession.clear(); window.location.href = 'Sign In.html'; return; }
@@ -178,7 +214,7 @@
           <div class="section-head">
             <div class="section-title">Your next lunch</div>
           </div>
-          <p class="next-lunch-empty">No lunch this week. Set your days below.</p>
+          ${renderNextLunchBlock(nextRes)}
         </div>
 
         <div class="section slide-up" style="--delay:220ms">
@@ -203,14 +239,11 @@
 
         <div class="section slide-up" style="--delay:320ms">
           <div class="section-head">
-            <div class="section-title">How far you'll travel</div>
+            <div class="section-title">Where you'll lunch</div>
+            <div class="section-aside" id="arrCountAside">— selected</div>
           </div>
           <div class="map-wrap" id="mapWrap"></div>
-          <div class="radius-selector" id="radiusSelector">
-            <button class="radius-btn" data-r="1">1 km</button>
-            <button class="radius-btn" data-r="3">3 km</button>
-            <button class="radius-btn" data-r="5">5 km</button>
-          </div>
+          <div class="arr-chips" id="arrChips"></div>
         </div>
       `;
 
@@ -262,66 +295,152 @@
     });
   }
 
-  /* ============ Map ============ */
+  /* ============ Arrondissement map ============ */
+  // Density score (office + creative blend) — 0..10. Drives heatmap opacity.
+  const ARR_DENSITY = {
+    1: 9, 2: 8, 3: 7, 4: 8, 5: 5, 6: 9, 7: 6, 8: 10,
+    9: 9, 10: 6, 11: 7, 12: 4, 13: 4, 14: 4, 15: 5,
+    16: 7, 17: 7, 18: 5, 19: 3, 20: 3
+  };
+  const ARR_ORDINAL = ['', '1ᵉʳ', '2ᵉ', '3ᵉ', '4ᵉ', '5ᵉ', '6ᵉ', '7ᵉ', '8ᵉ', '9ᵉ',
+                       '10ᵉ', '11ᵉ', '12ᵉ', '13ᵉ', '14ᵉ', '15ᵉ', '16ᵉ', '17ᵉ', '18ᵉ',
+                       '19ᵉ', '20ᵉ'];
+  let arrGeojson = null;
+  let arrLayer = null;
+  let arrLabels = [];
+  let selectedArrs = new Set();
+
+  async function loadArrGeojson() {
+    if (arrGeojson) return arrGeojson;
+    const res = await fetch('assets/paris-arrondissements.geojson');
+    arrGeojson = await res.json();
+    return arrGeojson;
+  }
+
+  function styleArr(featureArr, isSelected, isHover) {
+    const density = ARR_DENSITY[featureArr] || 0;
+    const heat = 0.015 + (density / 10) * 0.055;        // 0.015..0.07 — truly subtle
+    if (isSelected) {
+      return {
+        color: '#4F9B65', weight: 1.6,
+        fillColor: '#4F9B65', fillOpacity: 0.20
+      };
+    }
+    return {
+      color: '#3a3935', weight: 1,
+      fillColor: '#F4F1EA',
+      fillOpacity: isHover ? heat + 0.05 : heat
+    };
+  }
+
+  function arrFromFeature(f) {
+    return f.properties?.c_ar ?? f.properties?.arrondissement ?? null;
+  }
+
+  function updateChips() {
+    const chipsEl = document.getElementById('arrChips');
+    const aside = document.getElementById('arrCountAside');
+    if (!chipsEl) return;
+    const arr = Array.from(selectedArrs).sort((a, b) => a - b);
+    aside.textContent = arr.length
+      ? `${arr.length} selected`
+      : '— select on the map';
+    if (!arr.length) {
+      chipsEl.innerHTML = `<span class="arr-chip-empty">Click an arrondissement to add it.</span>`;
+      return;
+    }
+    chipsEl.innerHTML = arr.map(n => `
+      <button type="button" class="arr-chip" data-arr="${n}">
+        ${ARR_ORDINAL[n]}<span class="x">×</span>
+      </button>
+    `).join('');
+    chipsEl.querySelectorAll('.arr-chip').forEach(btn => {
+      btn.addEventListener('click', () => toggleArr(parseInt(btn.dataset.arr, 10)));
+    });
+  }
+
+  async function toggleArr(n) {
+    if (selectedArrs.has(n)) selectedArrs.delete(n);
+    else selectedArrs.add(n);
+    // Re-style this polygon
+    if (arrLayer) {
+      arrLayer.eachLayer(l => {
+        const an = arrFromFeature(l.feature);
+        if (an === n) l.setStyle(styleArr(n, selectedArrs.has(n), false));
+      });
+    }
+    updateChips();
+    try {
+      await db.member.setPreferences(Array.from(selectedArrs).sort((a, b) => a - b));
+    } catch (e) { console.error('setPreferences failed', e); }
+  }
+
   async function initMap() {
     const wrap = document.getElementById('mapWrap');
     if (!wrap || typeof L === 'undefined') return;
 
-    if (map) { map.remove(); map = null; radiusCircle = null; }
+    if (map) { map.remove(); map = null; arrLayer = null; arrLabels = []; }
 
-    let lat = 48.8566, lng = 2.3522, radius = 3;
+    // Load saved selection
+    selectedArrs = new Set();
     try {
       const prefs = await db.member.getPreferences();
-      if (prefs.ok) {
-        lat = prefs.prefs.lat || lat;
-        lng = prefs.prefs.lng || lng;
-        radius = prefs.prefs.radius || radius;
+      if (prefs.ok && Array.isArray(prefs.prefs.arrondissements)) {
+        prefs.prefs.arrondissements.forEach(n => selectedArrs.add(n));
       }
     } catch {}
 
-    const validRadii = [1, 3, 5];
-    if (!validRadii.includes(radius)) {
-      radius = 3;
-      try { await db.member.setPreferences(radius, lat, lng); } catch {}
-    }
-
-    document.querySelectorAll('.radius-btn').forEach(b => {
-      b.classList.toggle('active', parseFloat(b.dataset.r) === radius);
+    map = L.map(wrap, {
+      center: [48.8566, 2.3522],
+      zoom: 12,
+      zoomControl: false,
+      attributionControl: false,
+      dragging: true,
+      scrollWheelZoom: false,
+      doubleClickZoom: false
     });
-
-    map = L.map(wrap, { center: [lat, lng], zoom: 13, zoomControl: false, attributionControl: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
-    radiusCircle = L.circle([lat, lng], {
-      radius: radius * 1000,
-      color: '#F4F1EA', fillColor: '#F4F1EA',
-      fillOpacity: 0.06, weight: 1.4
-    }).addTo(map);
-    map.fitBounds(radiusCircle.getBounds(), { padding: [16, 16] });
+    const data = await loadArrGeojson();
 
-    const marker = L.circleMarker([lat, lng], {
-      radius: 5, color: '#F4F1EA', fillColor: '#F4F1EA',
-      fillOpacity: 1, weight: 2
+    arrLayer = L.geoJSON(data, {
+      style: (f) => styleArr(arrFromFeature(f), selectedArrs.has(arrFromFeature(f)), false),
+      onEachFeature: (feature, layer) => {
+        const n = arrFromFeature(feature);
+        layer.on('mouseover', () => {
+          if (!selectedArrs.has(n)) layer.setStyle(styleArr(n, false, true));
+        });
+        layer.on('mouseout', () => {
+          if (!selectedArrs.has(n)) layer.setStyle(styleArr(n, false, false));
+        });
+        layer.on('click', () => toggleArr(n));
+      }
     }).addTo(map);
 
-    map.on('click', async (e) => {
-      marker.setLatLng([e.latlng.lat, e.latlng.lng]);
-      radiusCircle.setLatLng([e.latlng.lat, e.latlng.lng]);
-      map.fitBounds(radiusCircle.getBounds(), { padding: [16, 16] });
-      try { await db.member.setPreferences(radius, e.latlng.lat, e.latlng.lng); } catch {}
+    // Ensure Leaflet knows the container size now that polygons are loaded
+    map.invalidateSize();
+    map.fitBounds(arrLayer.getBounds(), { padding: [12, 12] });
+
+    // Number labels at centroids
+    arrLabels.forEach(m => map.removeLayer(m));
+    arrLabels = [];
+    data.features.forEach(f => {
+      const n = arrFromFeature(f);
+      const c = f.properties?.geom_x_y;
+      if (n && c && c.lat && c.lon) {
+        const lbl = L.marker([c.lat, c.lon], {
+          interactive: false,
+          icon: L.divIcon({
+            className: 'arr-label',
+            html: ARR_ORDINAL[n],
+            iconSize: [24, 16]
+          })
+        }).addTo(map);
+        arrLabels.push(lbl);
+      }
     });
 
-    document.querySelectorAll('.radius-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        radius = parseFloat(btn.dataset.r);
-        radiusCircle.setRadius(radius * 1000);
-        map.fitBounds(radiusCircle.getBounds(), { padding: [16, 16] });
-        const c = radiusCircle.getLatLng();
-        try { await db.member.setPreferences(radius, c.lat, c.lng); } catch {}
-      });
-    });
+    updateChips();
   }
 
   /* ============================================================

@@ -1171,6 +1171,11 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
         <span class="label-text">Lunches</span>
         <span class="pill" id="pillLun">0</span>
       </button>
+      <button class="rail-item" data-page="matching">
+        <span class="glyph">⤬</span>
+        <span class="label-text">Matching</span>
+        <span class="pill" id="pillMatch">0</span>
+      </button>
 
       <div class="section-label">Insights</div>
       <button class="rail-item" data-page="data">
@@ -1287,6 +1292,42 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
               </div>
             </div>
             <div id="lunTable"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ MATCHING PAGE ============ -->
+      <section class="page" data-page="matching">
+        <div class="page-body">
+          <div class="page-title">
+            <h1>Matching <span class="italic">engine</span></h1>
+            <div class="meta" id="matchMeta">Pair available members within each other's radius.</div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h2>Run for a date</h2>
+              <div class="section-controls">
+                <input type="date" id="matchDateInput"
+                  style="background:var(--field); color:var(--ink); border:1px solid var(--field-line);
+                         padding:8px 10px; border-radius:6px; font-family:var(--sans); font-size:13px;" />
+                <button id="matchRunBtn" class="btn"
+                  style="background:var(--ink); color:var(--bg); border:0; padding:8px 14px;
+                         border-radius:6px; font-family:var(--sans); font-size:13px; font-weight:500;
+                         cursor: url('assets/fork-cursor.png') 32 4, pointer !important;">
+                  Run matching →
+                </button>
+                <span id="matchRunFeedback" style="font-size:12px; color:var(--muted); margin-left:6px;"></span>
+              </div>
+            </div>
+            <div id="matchPreview"></div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h2><span class="count" id="proposedCount">0</span> proposed</h2>
+            </div>
+            <div id="proposedTable"></div>
           </div>
         </div>
       </section>

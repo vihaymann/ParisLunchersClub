@@ -83,11 +83,12 @@
     document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === name));
     const label = {
       overview: 'Overview', applications: 'Applications',
-      members: 'Members', lunches: 'Lunches', data: 'Data'
+      members: 'Members', lunches: 'Lunches', matching: 'Matching', data: 'Data'
     }[name];
     document.getElementById('crumbNow').textContent = label;
     if (name === 'overview') await renderOverview();
     if (name === 'data') await renderData();
+    if (name === 'matching') await renderMatching();
   }
 
   /* ============================================================
@@ -358,6 +359,175 @@
     const out = {};
     (await db.applications.all()).forEach(a => out[a.id] = a);
     return out;
+  }
+
+  /* ============================================================
+     MATCHING PAGE
+     ============================================================ */
+  async function renderMatching() {
+    // Default the date input to tomorrow (or persist last-used)
+    const dateInput = document.getElementById('matchDateInput');
+    if (!dateInput.value) {
+      const tomorrow = new Date(Date.now() + 86400000);
+      dateInput.value = tomorrow.toISOString().slice(0, 10);
+    }
+    // Wire buttons once
+    if (!dateInput.dataset.wired) {
+      dateInput.dataset.wired = '1';
+      dateInput.addEventListener('change', () => previewMatching(dateInput.value));
+      document.getElementById('matchRunBtn').addEventListener('click', () => runMatching(dateInput.value));
+    }
+    await previewMatching(dateInput.value);
+    await renderProposedList();
+  }
+
+  async function previewMatching(date) {
+    const preview = document.getElementById('matchPreview');
+    if (!date) { preview.innerHTML = ''; return; }
+    preview.innerHTML = `<div class="empty" style="opacity:0.6;">Loading candidates…</div>`;
+    try {
+      const cands = await db.matching.candidates(date);
+      if (!cands.length) {
+        preview.innerHTML = `<div class="empty">No candidate pairs for ${escape(date)} — fewer than 2 available members within each other's radius, or they've already matched.</div>`;
+        return;
+      }
+      preview.innerHTML = `
+        <table class="tbl">
+          <thead><tr>
+            <th>Member A</th><th>Member B</th><th>Shared neighbourhoods</th><th>Score</th>
+          </tr></thead>
+          <tbody>
+            ${cands.map(c => `
+              <tr>
+                <td class="name">${escape(c.first_a)} ${escape(c.last_a)}</td>
+                <td class="name">${escape(c.first_b)} ${escape(c.last_b)}</td>
+                <td>${(c.shared_arrondissements || []).map(n => `${n}ᵉ`).join(' · ') || '—'}</td>
+                <td>${Number(c.score).toFixed(0)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">
+          ${cands.length} eligible ${cands.length === 1 ? 'pair' : 'pairs'}. Click <em>Run matching</em> to greedy-pair them and add to proposed lunches.
+        </p>
+      `;
+    } catch (err) {
+      console.error('Preview matching error:', err);
+      preview.innerHTML = `<div class="empty">Failed to load candidates: ${escape(err.message || String(err))}</div>`;
+    }
+  }
+
+  async function runMatching(date) {
+    const fb = document.getElementById('matchRunFeedback');
+    fb.textContent = 'Running…';
+    try {
+      const proposed = await db.matching.runFor(date);
+      fb.textContent = `Proposed ${proposed.length} ${proposed.length === 1 ? 'pair' : 'pairs'}.`;
+      setTimeout(() => { fb.textContent = ''; }, 4000);
+      await previewMatching(date);
+      await renderProposedList();
+    } catch (err) {
+      console.error('Run matching error:', err);
+      fb.textContent = `Error: ${err.message || err}`;
+    }
+  }
+
+  async function renderProposedList() {
+    const tbl = document.getElementById('proposedTable');
+    const count = document.getElementById('proposedCount');
+    try {
+      const list = await db.matching.listProposed({ status: 'proposed' });
+      count.textContent = list.length;
+      document.getElementById('pillMatch').textContent = list.length;
+
+      if (!list.length) {
+        tbl.innerHTML = `<div class="empty">No proposed lunches. Pick a date above and run matching.</div>`;
+        return;
+      }
+      const allApps = await indexApps();
+      tbl.innerHTML = `
+        <table class="tbl">
+          <thead><tr>
+            <th>Date</th><th>Member A</th><th>Member B</th><th>Quartier</th><th>Score</th><th>Restaurant</th><th></th>
+          </tr></thead>
+          <tbody>
+            ${list.map(p => {
+              const a = allApps[p.member_a]?.data || {};
+              const b = allApps[p.member_b]?.data || {};
+              return `
+                <tr data-id="${p.id}">
+                  <td>${escape(p.date)}</td>
+                  <td class="name">${escape(a.firstName || '')} ${escape(a.lastName || '')}</td>
+                  <td class="name">${escape(b.firstName || '')} ${escape(b.lastName || '')}</td>
+                  <td>${p.neighborhood ? escape(p.neighborhood) + 'ᵉ' : '—'}</td>
+                  <td>${Number(p.score || 0).toFixed(0)}</td>
+                  <td>
+                    <input class="prop-restaurant" data-id="${p.id}" type="text" placeholder="Restaurant…"
+                      style="background:var(--field); color:var(--ink); border:1px solid var(--field-line);
+                             padding:5px 8px; border-radius:4px; font-size:12px; font-family:var(--sans); width:150px;" />
+                  </td>
+                  <td style="white-space:nowrap;">
+                    <button class="prop-confirm btn" data-id="${p.id}"
+                      style="background:var(--ok); color:var(--bg); border:0; padding:5px 10px;
+                             border-radius:4px; font-size:11px; letter-spacing:0.06em; margin-right:4px;
+                             cursor: url('assets/fork-cursor.png') 32 4, pointer !important;">Confirm</button>
+                    <button class="prop-decline btn" data-id="${p.id}"
+                      style="background:transparent; color:var(--danger); border:1px solid var(--danger);
+                             padding:4px 9px; border-radius:4px; font-size:11px; letter-spacing:0.06em;
+                             cursor: url('assets/fork-cursor.png') 32 4, pointer !important;">Decline</button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+
+      tbl.querySelectorAll('.prop-confirm').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          const restEl = tbl.querySelector(`.prop-restaurant[data-id="${id}"]`);
+          const restaurant = (restEl?.value || '').trim();
+          if (!restaurant) {
+            restEl.focus();
+            restEl.style.borderColor = 'var(--danger)';
+            setTimeout(() => { restEl.style.borderColor = 'var(--field-line)'; }, 1600);
+            return;
+          }
+          btn.disabled = true; btn.textContent = '…';
+          try {
+            const res = await db.matching.confirm(id, restaurant);
+            if (res?.ok) {
+              await renderProposedList();
+              await renderLunches();
+              await renderRailPills();
+            } else {
+              btn.textContent = 'Confirm';
+              btn.disabled = false;
+              alert(res?.error || 'Confirm failed');
+            }
+          } catch (e) {
+            btn.disabled = false; btn.textContent = 'Confirm';
+            alert('Error: ' + (e.message || e));
+          }
+        });
+      });
+      tbl.querySelectorAll('.prop-decline').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Decline this proposed lunch?')) return;
+          btn.disabled = true; btn.textContent = '…';
+          try {
+            await db.matching.decline(btn.dataset.id);
+            await renderProposedList();
+          } catch (e) {
+            btn.disabled = false; btn.textContent = 'Decline';
+          }
+        });
+      });
+    } catch (err) {
+      console.error('Proposed list error:', err);
+      tbl.innerHTML = `<div class="empty">Failed to load proposed lunches.</div>`;
+    }
   }
 
   /* ============================================================
